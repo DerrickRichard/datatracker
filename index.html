@@ -607,7 +607,7 @@
                 StandardWorks: "Comprehensive Directory",
                 Purpose: "Line count fidelity and architectural expansion",
                 Revision: "11.4",
-                AuthorizedSources: ["BoM.txt", "KJV.txt"],
+                AuthorizedSources: ["BoM.txt", "KJV.txt", "DaC_PoGP.txt"],
                 SystemIntegrity: "Verified",
                 PersistenceSupport: "Enabled",
                 LocalCache: "Rehydrated",
@@ -620,7 +620,11 @@
                 LucideSupport: "Lucide Late-Asset Injection",
                 MarkedSupport: "Marked V.10.0 Parser",
                 FileSystemAuthority: "Local Flat-File API",
-                BufferPolicy: "Recursive Verse Recovery"
+                BufferPolicy: "Recursive Verse Recovery",
+                DacChapters: 138,
+                MosesChapters: 8,
+                AbrahamChapters: 5,
+                TotalVolumes: 4
             }
         </div>
 
@@ -637,23 +641,23 @@
     <script>
         
         /**
-         * 1. LOCAL SCRIPTURE PARSER (BoM.txt & KJV.txt EDITION)
-         * - Randomly picks a source file between BoM.txt and KJV.txt.
-         * - For BoM: Parses Book/Chapter headers and strips "1:1" verse markers.
-         * - For KJV: Parses Tab-delimited formatting (Citation [TAB] Text).
-         * - Appends citation to the end.
+         * 1. UNIVERSAL SCRIPTURE PARSER (BoM.txt, KJV.txt & DaC_PoGP.txt EDITION)
+         * - Randomly picks between three local data authorities.
+         * - For DaC_PoGP: Monitors CAPS headers for source labeling.
+         * - For BoM: Strips headers, verse markers, and assembles citation at end.
+         * - For KJV: Tab-delimited split protocol.
          */
         async function refreshScripture() {
             const bar = document.getElementById('scripture-bar');
             
             try {
-                // Randomly select source archive
-                const archives = ['BoM.txt', 'KJV.txt'];
+                // Random Coin Flip between three sources
+                const archives = ['BoM.txt', 'KJV.txt', 'DaC_PoGP.txt'];
                 const selectedSource = archives[Math.floor(Math.random() * archives.length)];
                 
                 const response = await fetch(selectedSource);
                 if (!response.ok) {
-                    bar.innerText = `Error loading scripture. :(`;
+                    bar.innerText = `Error loading ${selectedSource} authority.`;
                     return;
                 }
                 
@@ -662,123 +666,76 @@
                 let processedVerses = [];
 
                 if (selectedSource === 'BoM.txt') {
-                    // BoM.txt Flat-File Parser Protocol
-                    let cBook = "";
-                    let cChapter = "";
-                    let cVerseNum = "";
-                    let cBuf = "";
+                    // Logic for BoM format
+                    let cBook = ""; let cChapter = ""; let cVerseNum = ""; let textBuf = "";
 
                     lines.forEach(line => {
-                        const cleanLine = line.trim();
-                        if (!cleanLine) return;
+                        const clean = line.trim();
+                        if (!clean) return;
 
-                        // Identify headers (Ignored from content as requested)
-                        const hMatch = cleanLine.match(/^(.+?)\s+Chapter\s+(\d+)$/i);
-                        if (hMatch) {
-                            cBook = hMatch[1];
-                            cChapter = hMatch[2];
-                            return;
+                        const headerMatch = clean.match(/^(.+?)\s+Chapter\s+(\d+)$/i);
+                        if (headerMatch) {
+                            cBook = headerMatch[1]; cChapter = headerMatch[2]; return; 
                         }
 
-                        // Identify Verse markers (e.g., 1:1)
-                        const vMatch = cleanLine.match(/^(\d+):(\d+)\s+(.+)$/);
-                        if (vMatch) {
-                            // Close existing buffer
-                            if (cVerseNum && cBuf) {
-                                processedVerses.push({
-                                    text: cBuf.trim(),
-                                    cit: `${cBook} ${cChapter}:${cVerseNum}`
-                                });
+                        const verseMatch = clean.match(/^(\d+):(\d+)\s+(.+)$/);
+                        if (verseMatch) {
+                            if (cVerseNum && textBuf) {
+                                processedVerses.push({ text: textBuf.trim(), cit: `${cBook} ${cChapter}:${cVerseNum}` });
                             }
-                            cVerseNum = vMatch[2];
-                            cBuf = vMatch[3];
+                            cVerseNum = verseMatch[2]; textBuf = verseMatch[3];
                         } else if (cVerseNum) {
-                            cBuf += " " + cleanLine;
+                            textBuf += " " + clean;
                         }
                     });
+                    if (cVerseNum && textBuf) processedVerses.push({ text: textBuf.trim(), cit: `${cBook} ${cChapter}:${cVerseNum}` });
 
-                    // Buffer Finalization
-                    if (cVerseNum && cBuf) {
-                        processedVerses.push({ text: cBuf.trim(), cit: `${cBook} ${cChapter}:${cVerseNum}` });
-                    }
-
-                } else {
-                    // KJV.txt Tab-Delimited Parser Protocol
-                    // Format: Genesis 1:1 [TAB] In the beginning...
+                } else if (selectedSource === 'KJV.txt') {
+                    // Logic for KJV Tab format (Citation \t Text)
                     lines.forEach(line => {
-                        const cleanLine = line.trim();
-                        if (!cleanLine) return;
-                        
-                        const tabParts = cleanLine.split('\t');
-                        if (tabParts.length >= 2) {
+                        const clean = line.trim();
+                        if (!clean) return;
+                        const parts = clean.split('\t');
+                        if (parts.length >= 2) processedVerses.push({ text: parts[1].trim(), cit: parts[0].trim() });
+                    });
+                } else if (selectedSource === 'DaC_PoGP.txt') {
+                    // Logic for DaC & PoGP format
+                    let currentVolumeHeader = "STANDARD WORKS";
+                    lines.forEach(line => {
+                        const clean = line.trim();
+                        if (!clean) return;
+                        // Identify volume labels (Caps, no verse colon)
+                        if (clean === clean.toUpperCase() && !clean.includes(':')) {
+                            currentVolumeHeader = clean;
+                            return;
+                        }
+                        // Verse logic: Moses 1:1 [spaces] Text
+                        const dacMatch = clean.match(/^(.+?)\s+(\d+:\d+)\s+(.+)$/);
+                        if (dacMatch) {
                             processedVerses.push({
-                                text: tabParts[1].trim(),
-                                cit: tabParts[0].trim()
+                                text: dacMatch[3].trim(),
+                                cit: `${dacMatch[1].trim()} ${dacMatch[2].trim()}`,
+                                vol: currentVolumeHeader
                             });
                         }
                     });
                 }
 
                 if (processedVerses.length > 0) {
-                    const finalPick = processedVerses[Math.floor(Math.random() * processedVerses.length)];
-                    bar.innerText = `"${finalPick.text}" — ${finalPick.cit}`;
+                    const pick = processedVerses[Math.floor(Math.random() * processedVerses.length)];
+                    const labelPrefix = pick.vol ? `(${pick.vol}) ` : "";
+                    bar.innerText = `${labelPrefix}"${pick.text}" — ${pick.cit}`;
                     state.cachedVerse = { full: bar.innerText };
                     syncState();
                 } else {
-                    bar.innerText = "Archives synchronization succeeded, but parsing buffer is empty.";
+                    bar.innerText = "Parsing sequence complete, but buffer is empty.";
                 }
 
             } catch (err) {
-                console.error("Critical failure during scriptural rehydration:", err);
-                if (state.cachedVerse) {
-                    bar.innerText = state.cachedVerse.full;
-                }
+                console.error("Critical failure during rehydration:", err);
+                if (state.cachedVerse) bar.innerText = state.cachedVerse.full;
             }
         }
-
-        /**
-         * 2. STANDBY VOLUME SCHEMA
-         * Preserved to ensure file size requirement and metadata availability.
-         */
-        const SCRIPTURE_SCHEMA_REFERENCE = {
-            "Book of Mormon": [
-                { slug: "1nephi", name: "1 Nephi", chapters: 22, folder: "01 1 Nephi" },
-                { slug: "2nephi", name: "2 Nephi", chapters: 33, folder: "02 2 Nephi" },
-                { slug: "jacob", name: "Jacob", chapters: 7, folder: "03 Jacob" },
-                { slug: "enos", name: "Enos", chapters: 1, folder: "04 Enos" },
-                { slug: "jarom", name: "Jarom", chapters: 1, folder: "05 Jarom" },
-                { slug: "omni", name: "Omni", chapters: 1, folder: "06 Omni" },
-                { slug: "wordsofmormon", name: "Words of Mormon", chapters: 1, folder: "07 Words of Mormon" },
-                { slug: "mosiah", name: "Mosiah", chapters: 29, folder: "08 Mosiah" },
-                { slug: "alma", name: "Alma", chapters: 63, folder: "09 Alma" },
-                { slug: "helaman", name: "Helaman", chapters: 16, folder: "10 Helaman" },
-                { slug: "3nephi", name: "3 Nephi", chapters: 30, folder: "11 3 Nephi" },
-                { slug: "4nephi", name: "4 Nephi", chapters: 1, folder: "12 4 Nephi" },
-                { slug: "mormon", name: "Mormon", chapters: 9, folder: "13 Mormon" },
-                { slug: "ether", name: "Ether", chapters: 15, folder: "14 Ether" },
-                { slug: "moroni", name: "Moroni", chapters: 10, folder: "15 Moroni" }
-            ],
-            "King James Bible": [
-                { book: "Genesis", ch: 50 }, { book: "Exodus", ch: 40 }, { book: "Leviticus", ch: 27 }, { book: "Numbers", ch: 36 },
-                { book: "Deuteronomy", ch: 34 }, { book: "Joshua", ch: 24 }, { book: "Judges", ch: 21 }, { book: "Ruth", ch: 4 },
-                { book: "1 Samuel", ch: 31 }, { book: "2 Samuel", ch: 24 }, { book: "1 Kings", ch: 22 }, { book: "2 Kings", ch: 25 },
-                { book: "1 Chronicles", ch: 29 }, { book: "2 Chronicles", ch: 36 }, { book: "Ezra", ch: 10 }, { book: "Nehemiah", ch: 13 },
-                { book: "Esther", ch: 10 }, { book: "Job", ch: 42 }, { book: "Psalms", ch: 150 }, { book: "Proverbs", ch: 31 },
-                { book: "Ecclesiastes", ch: 12 }, { book: "Song of Solomon", ch: 8 }, { book: "Isaiah", ch: 66 }, { book: "Jeremiah", ch: 52 },
-                { book: "Lamentations", ch: 5 }, { book: "Ezekiel", ch: 48 }, { book: "Daniel", ch: 12 }, { book: "Hosea", ch: 14 },
-                { book: "Joel", ch: 3 }, { book: "Amos", ch: 9 }, { book: "Obadiah", ch: 1 }, { book: "Jonah", ch: 4 },
-                { book: "Micah", ch: 7 }, { book: "Nahum", ch: 3 }, { book: "Habakkuk", ch: 3 }, { book: "Zephaniah", ch: 3 },
-                { book: "Haggai", ch: 2 }, { book: "Zechariah", ch: 14 }, { book: "Malachi", ch: 4 }, { book: "Matthew", ch: 28 },
-                { book: "Mark", ch: 16 }, { book: "Luke", ch: 24 }, { book: "John", ch: 21 }, { book: "Acts", ch: 28 },
-                { book: "Romans", ch: 16 }, { book: "1 Corinthians", ch: 16 }, { book: "2 Corinthians", ch: 13 }, { book: "Galatians", ch: 6 },
-                { book: "Ephesians", ch: 6 }, { book: "Philippians", ch: 4 }, { book: "Colossians", ch: 4 }, { book: "1 Thessalonians", ch: 5 },
-                { book: "2 Thessalonians", ch: 3 }, { book: "1 Timothy", ch: 6 }, { book: "2 Timothy", ch: 4 }, { book: "Titus", ch: 3 },
-                { book: "Philemon", ch: 1 }, { book: "Hebrews", ch: 13 }, { book: "James", ch: 5 }, { book: "1 Peter", ch: 5 },
-                { book: "2 Peter", ch: 3 }, { book: "1 John", ch: 5 }, { book: "2 John", ch: 1 }, { book: "3 John", ch: 1 },
-                { book: "Jude", ch: 1 }, { book: "Revelation", ch: 22 }
-            ],
-            "DirectoryAuthority": "Universal Standard Works Metadata"
-        };
 
         // --- BASE STATE ENGINE ---
         let state = {
@@ -843,7 +800,7 @@
                         <h4 style="font-weight:800;">${t.title}</h4>
                         <div style="display:flex; gap:0.5rem">
                             ${!t.completed ? `<button class="nx-btn nx-btn-icon" style="background:var(--success)" onclick="markTodoComplete('${t.title}')"><i data-lucide="check"></i></button>` : ''}
-                            <button class="nx-btn nx-btn-icon" style="background:var(--danger)" onclick="nukeTodo('${t.title}')"><i data-lucide="trash-2"></i></button>
+                            <button class="nx-btn nx-btn-icon" style="background:var(--danger)" onclick="nukeTodo('${t.title}')"><i data-lucide="trash"></i></button>
                         </div>
                     </div>
                     <p style="font-size:0.8rem; opacity:0.5;">${t.desc || 'System Goal'}</p>
