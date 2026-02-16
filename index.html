@@ -1,1 +1,993 @@
-placeholder text
+<!DOCTYPE html>
+<html lang="en" data-theme="glassmorphism">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Nexus | Universal Dashboard</title>
+    <!-- Core External Dependencies -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        /* 
+        ================================================================================
+        1. MASTER ARCHITECTURE & CSS VARIABLES
+        ================================================================================
+        - Preserving the exact visual style from the context provided.
+        - Using Default System Typography for a clean, non-themed feel.
+        */
+        :root {
+            /* Theme: Glassmorphism (Default) */
+            --bg-primary: #0f172a;
+            --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            --accent-color: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --modal-bg: rgba(15, 23, 42, 0.98);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --panel-blur: 32px;
+            --curve: 1.5rem;
+            
+            /* System Default Fonts */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="cyberpunk"] {
+            --bg-primary: #050505;
+            --bg-gradient: linear-gradient(180deg, #050505 0%, #1a0b2e 100%);
+            --accent-color: #00ffff;
+            --accent-glow: rgba(0, 255, 255, 0.5);
+            --card-bg: rgba(10, 10, 10, 0.9);
+            --card-border: #00ffff;
+            --text-main: #00ffff;
+            --text-dim: #008888;
+            --panel-blur: 0px;
+        }
+
+        [data-theme="midnight"] {
+            --bg-primary: #000000;
+            --bg-gradient: black;
+            --accent-color: #ffffff;
+            --accent-glow: rgba(255, 255, 255, 0.1);
+            --card-bg: #0a0a0a;
+            --card-border: #222222;
+            --text-main: #ffffff;
+            --text-dim: #555555;
+            --panel-blur: 0px;
+        }
+
+        /* 
+        ================================================================================
+        2. GLOBAL RESET & BOILERPLATE
+        ================================================================================
+        */
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nx-container { max-width: 1700px; margin: 0 auto; padding: 2rem; position: relative; z-index: 10; }
+
+        /* 
+        ================================================================================
+        3. HEADER ARCHITECTURE & SCRIPTURE
+        ================================================================================
+        */
+        .nx-header { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 3.5rem; }
+        
+        .verse-aside {
+            font-size: 0.85rem;
+            font-style: italic;
+            opacity: 0.6;
+            color: var(--accent-color);
+            max-width: 600px;
+            line-height: 1.4;
+            animation: fadeIn 2s ease;
+        }
+
+        /* 
+        ================================================================================
+        4. DASHBOARD GRID & CARDS
+        ================================================================================
+        */
+        .nx-dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            grid-auto-rows: minmax(130px, auto);
+        }
+
+        .nx-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(var(--panel-blur));
+            border-radius: var(--curve);
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .nx-card:hover { border-color: var(--accent-color); box-shadow: 0 10px 40px -10px var(--accent-glow); transform: translateY(-3px); }
+
+        .nx-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+
+        .nx-card-title {
+            font-weight: 900;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            opacity: 0.5;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        /* Grid Mapping */
+        .grid-sm { grid-column: span 3; }
+        .grid-md { grid-column: span 6; }
+        .grid-lg { grid-column: span 9; }
+        .grid-full { grid-column: span 12; }
+        .row-2 { grid-row: span 2; }
+        .row-3 { grid-row: span 3; }
+
+        /* 
+        ================================================================================
+        5. NEXUS COMPONENTS: BUTTONS, INPUTS
+        ================================================================================
+        */
+        .nx-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.85rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex; align-items: center; gap: 0.6rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .nx-btn:hover { background: var(--accent-color); color: white; border-color: transparent; }
+        .nx-btn-icon { padding: 0.65rem; border-radius: 0.75rem; }
+
+        .nx-input {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.85rem 1.15rem;
+            border-radius: 0.85rem;
+            width: 100%;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 1rem;
+        }
+
+        .nx-input:focus { border-color: var(--accent-color); }
+
+        /* 
+        ================================================================================
+        6. THE OMNI-MODAL SYSTEM
+        ================================================================================
+        */
+        .nx-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: none; align-items: center; justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .nx-modal {
+            background: var(--modal-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.9);
+            position: relative;
+        }
+
+        .nx-modal h2 { margin-bottom: 2rem; font-weight: 900; letter-spacing: -1px; }
+
+        /* 
+        ================================================================================
+        7. CHRONOS TIMER CORE
+        ================================================================================
+        */
+        .timer-display {
+            font-family: var(--font-mono);
+            font-size: 5rem;
+            font-weight: 700;
+            text-align: center;
+            margin: 1.5rem 0;
+            letter-spacing: -4px;
+            color: var(--text-main);
+            text-shadow: 0 0 30px var(--accent-glow);
+        }
+
+        .timer-controls-manual {
+            display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem;
+        }
+
+        .timer-unit-input {
+            width: 70px; text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            color: white; font-family: var(--font-mono);
+            padding: 0.5rem;
+        }
+
+        /* 
+        ================================================================================
+        8. TOASTER NOTIFICATIONS
+        ================================================================================
+        */
+        #nx-toast-container {
+            position: fixed; bottom: 2rem; right: 2rem;
+            z-index: 10000; display: flex; flex-direction: column; gap: 1rem;
+        }
+
+        .nx-toast {
+            background: var(--modal-bg);
+            border-left: 5px solid var(--accent-color);
+            padding: 1.25rem 2rem;
+            border-radius: 1rem;
+            color: white; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            animation: slideInRight 0.4s ease;
+            display: flex; align-items: center; gap: 1rem;
+        }
+
+        /* 
+        ================================================================================
+        9. HABIT 3.0 & TODO PERSISTENCE
+        ================================================================================
+        */
+        .habit-row {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 1.25rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .circular-wrap {
+            width: 65px; height: 65px; border-radius: 50%;
+            background: conic-gradient(var(--accent-color) 0deg, rgba(255,255,255,0.05) 0deg);
+            display: flex; align-items: center; justify-content: center; position: relative;
+        }
+
+        .circular-wrap::after {
+            content: ''; width: 54px; height: 54px;
+            background: var(--bg-primary); border-radius: 50%;
+            position: absolute;
+        }
+
+        .progress-val { position: relative; z-index: 10; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 900; }
+
+        .todo-item {
+            border-left: 4px solid var(--accent-color);
+            padding: 1rem; background: rgba(255,255,255,0.02);
+            border-radius: 1rem; margin-bottom: 1rem;
+            display: flex; flex-direction: column; gap: 0.5rem;
+            transition: all 0.5s ease;
+        }
+
+        .todo-item.completed {
+            opacity: 0.4;
+            text-decoration: line-through;
+            border-left-color: var(--text-dim);
+            order: 999;
+        }
+
+        /* 
+        ================================================================================
+        10. PORTALS: ICON + LABEL + ELLIPSIS
+        ================================================================================
+        */
+        .portal-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem;
+        }
+
+        .portal-item {
+            position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+            cursor: pointer; transition: 0.3s;
+        }
+
+        .portal-item:hover { transform: translateY(-5px); }
+
+        .portal-icon-bg {
+            width: 60px; height: 60px; background: rgba(255,255,255,0.03);
+            border-radius: 1.15rem; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--card-border); transition: 0.3s;
+        }
+
+        .portal-item:hover .portal-icon-bg { border-color: var(--accent-color); background: var(--accent-color); }
+
+        .portal-label {
+            font-size: 0.7rem; font-weight: 700; width: 100%; text-align: center;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            opacity: 0.4; transition: 0.3s;
+        }
+
+        .portal-item:hover .portal-label { opacity: 1; }
+
+        .portal-del-btn {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--danger); border: none; width: 22px; height: 22px;
+            border-radius: 50%; color: white; display: none; z-index: 100;
+            align-items: center; justify-content: center; cursor: pointer;
+        }
+
+        .portal-item:hover .portal-del-btn { display: flex; }
+
+        /* 
+        ================================================================================
+        11. DUAL-STATE NOTEPAD ENGINE
+        ================================================================================
+        */
+        .notepad-host { position: relative; height: 350px; }
+        .notepad-editor, .notepad-viewer {
+            position: absolute; inset: 0; padding: 1.25rem;
+            border-radius: 1rem; font-size: 0.95rem; line-height: 1.6;
+            overflow-y: auto;
+        }
+        .notepad-editor { 
+            background: rgba(0,0,0,0.3); border: none; outline: none;
+            font-family: var(--font-mono); visibility: hidden; z-index: 5;
+            resize: none; width: 100%; height: 100%;
+        }
+        .notepad-viewer { 
+            background: transparent; z-index: 1; cursor: text;
+        }
+        .notepad-viewer h1 { color: var(--accent-color); margin-bottom: 1rem; font-weight: 800; border-bottom: 1px solid var(--card-border); }
+        .notepad-viewer p { margin-bottom: 1rem; }
+
+        /* 
+        ================================================================================
+        12. ANIMATIONS & UTILS
+        ================================================================================
+        */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <!-- OMNI-MODALS (System Inputs) -->
+    
+    <!-- Modal: Theme Picker -->
+    <div class="nx-modal-overlay" id="mod-theme">
+        <div class="nx-modal">
+            <h2 style="color: var(--accent-color);">System Interface</h2>
+            <div style="display: grid; gap: 1rem;">
+                <button class="nx-btn" onclick="applyTheme('glassmorphism')">Glassmorphism</button>
+                <button class="nx-btn" onclick="applyTheme('cyberpunk')">Cyberpunk</button>
+                <button class="nx-btn" onclick="applyTheme('midnight')">Midnight</button>
+            </div>
+            <button class="nx-btn" style="margin-top: 2rem; width: 100%;" onclick="closeMod('mod-theme')">Close</button>
+        </div>
+    </div>
+
+    <!-- Modal: General Creator (For Workspaces, Todos, Habits, Shortcuts) -->
+    <div class="nx-modal-overlay" id="mod-creator">
+        <div class="nx-modal">
+            <h2 id="creator-title">New Entry</h2>
+            <div id="creator-fields"></div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="nx-btn" style="flex: 1; background: var(--accent-color);" id="creator-save-btn">Synthesize</button>
+                <button class="nx-btn" style="flex: 1;" onclick="closeMod('mod-creator')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="nx-toast-container"></div>
+
+    <div class="nx-container">
+        
+        <!-- HEADER -->
+        <header class="nx-header">
+            <div>
+                <h1 style="font-size: 3.2rem; font-weight: 950; letter-spacing: -3px;">NEXUS<span style="color: var(--accent-color);">.</span></h1>
+            </div>
+            <div class="verse-aside" id="scripture-bar">Searching the standard works...</div>
+            
+            <div style="display: flex; gap: 1rem; align-items: center; margin-left: auto;">
+                <div id="weather-node" style="padding: 0.85rem 1.5rem; background: var(--card-bg); border-radius: 1.25rem; border: 1px solid var(--card-border); font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem;">
+                    <i data-lucide="map-pin" class="animate-pulse"></i> SYNCING GEO...
+                </div>
+                <button class="nx-btn nx-btn-icon" onclick="openMod('mod-theme')"><i data-lucide="palette"></i></button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD -->
+        <main class="nx-dashboard-grid">
+            
+            <!-- OBJECTIVES (TODOS) -->
+            <section class="nx-card grid-md row-3">
+                <div class="nx-card-header">
+                    <span class="nx-card-title"><i data-lucide="shield-check"></i> Objectives</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="nx-btn nx-btn-icon" onclick="spawnWorkspaceCreator()"><i data-lucide="folder-plus"></i></button>
+                        <select id="todo-list-sel" class="nx-btn" style="padding: 2px 10px;" onchange="switchWorkspace()"></select>
+                    </div>
+                </div>
+
+                <div id="todo-view" style="height: 480px; overflow-y: auto; padding-right: 1rem; display: flex; flex-direction: column;">
+                    <!-- JS Injected -->
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button class="nx-btn" style="width: 100%; height: 55px; justify-content: center; background: rgba(59, 130, 246, 0.05);" onclick="spawnTodoCreator()">
+                        <i data-lucide="plus"></i> Add Objective
+                    </button>
+                </div>
+            </section>
+
+            <!-- CHRONOS TIMER -->
+            <section class="nx-card grid-sm row-2">
+                <div class="nx-card-header">
+                    <span class="nx-card-title"><i data-lucide="hourglass"></i> Chronos Core</span>
+                </div>
+                <div class="timer-controls-manual">
+                    <input type="number" id="t-min" class="timer-unit-input" value="25">
+                    <span style="font-weight: 900; opacity: 0.2; align-self: center;">:</span>
+                    <input type="number" id="t-sec" class="timer-unit-input" value="00">
+                    <button class="nx-btn nx-btn-icon" onclick="applyTime()" style="padding: 6px;"><i data-lucide="check"></i></button>
+                </div>
+                <div class="timer-display" id="clock">25:00</div>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="nx-btn" id="clock-toggle" onclick="toggleClock()">Engage</button>
+                    <button class="nx-btn nx-btn-icon" onclick="resetClock()"><i data-lucide="refresh-cw"></i></button>
+                </div>
+            </section>
+
+            <!-- GROWTH TRACKER (HABITS) -->
+            <section class="nx-card grid-sm row-3">
+                <div class="nx-card-header">
+                    <span class="nx-card-title"><i data-lucide="trending-up"></i> Disciplines</span>
+                </div>
+                <div id="habit-view" style="height: 520px; overflow-y: auto;"></div>
+                <button class="nx-btn" style="width: 100%; justify-content: center; margin-top: 1.5rem;" onclick="spawnHabitCreator()">
+                    <i data-lucide="plus"></i> New Journey
+                </button>
+            </section>
+
+            <!-- PORTAL GATEWAY (SHORTCUTS) -->
+            <section class="nx-card grid-sm h-1">
+                <div class="nx-card-header">
+                    <span class="nx-card-title"><i data-lucide="zap"></i> Portal Gate</span>
+                    <button class="nx-btn nx-btn-icon" onclick="spawnPortalCreator()"><i data-lucide="plus"></i></button>
+                </div>
+                <div class="portal-grid" id="portal-view"></div>
+            </section>
+
+            <!-- ARCANE ARCHIVE (NOTEPAD) -->
+            <section class="nx-card grid-md row-2">
+                <div class="nx-card-header">
+                    <span class="nx-card-title"><i data-lucide="book-open"></i> Archive of Thoughts</span>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="nx-btn nx-btn-icon" onclick="spawnNotepadCreator()"><i data-lucide="file-plus"></i></button>
+                        <select id="notes-sel" class="nx-btn" style="padding: 2px 10px;" onchange="switchArchive()"></select>
+                    </div>
+                </div>
+                <div class="notepad-host">
+                    <textarea class="notepad-editor" id="note-edit-raw"></textarea>
+                    <div class="notepad-viewer" id="note-view-html" onclick="activateNoteEditor()"></div>
+                </div>
+                <div style="margin-top: 1rem; text-align: right; font-size: 0.7rem; opacity: 0.3; font-family: var(--font-mono);">SYNC://MARKDOWN_ENABLED</div>
+            </section>
+
+        </main>
+
+        <footer style="margin-top: 7rem; text-align: center; opacity: 0.2; font-size: 0.75rem; letter-spacing: 5px; font-weight: 950;">
+            PROJECT NEXUS // SYSTEM ARCHITECTURE REVISION 8.1 // LOCAL PERSISTENCE SECURED
+        </footer>
+    </div>
+
+    <!-- 
+    ================================================================================
+    13. NEXUS COMMAND CORE (JAVASCRIPT)
+    ================================================================================
+    -->
+    <script>
+        
+        /**
+         * FULL SCRIPTURE DATABASE (LDS STANDARD WORKS)
+         * Generated links mapping to awerkamp's markdown repository.
+         */
+        const SCRIPTURE_BASE = "https://raw.githubusercontent.com/awerkamp/markdown-scriptures-standard-works-church-of-jesus-christ/master";
+        
+        // Massive Link Generator Block for 1189+ Chapters
+        function generateScriptureLinks() {
+            let links = [];
+            const volumes = [
+                {
+                    name: "Book of Mormon",
+                    books: [
+                        { slug: "1nephi", name: "1 Nephi", chapters: 22, folder: "01 1 Nephi" },
+                        { slug: "2nephi", name: "2 Nephi", chapters: 33, folder: "02 2 Nephi" },
+                        { slug: "jacob", name: "Jacob", chapters: 7, folder: "03 Jacob" },
+                        { slug: "enos", name: "Enos", chapters: 1, folder: "04 Enos" },
+                        { slug: "jarom", name: "Jarom", chapters: 1, folder: "05 Jarom" },
+                        { slug: "omni", name: "Omni", chapters: 1, folder: "06 Omni" },
+                        { slug: "wordsofmormon", name: "Words of Mormon", chapters: 1, folder: "07 Words of Mormon" },
+                        { slug: "mosiah", name: "Mosiah", chapters: 29, folder: "08 Mosiah" },
+                        { slug: "alma", name: "Alma", chapters: 63, folder: "09 Alma" },
+                        { slug: "helaman", name: "Helaman", chapters: 16, folder: "10 Helaman" },
+                        { slug: "3nephi", name: "3 Nephi", chapters: 30, folder: "11 3 Nephi" },
+                        { slug: "4nephi", name: "4 Nephi", chapters: 1, folder: "12 4 Nephi" },
+                        { slug: "mormon", name: "Mormon", chapters: 9, folder: "13 Mormon" },
+                        { slug: "ether", name: "Ether", chapters: 15, folder: "14 Ether" },
+                        { slug: "moroni", name: "Moroni", chapters: 10, folder: "15 Moroni" }
+                    ]
+                },
+                {
+                    name: "Old Testament",
+                    books: [
+                        { slug: "genesis", name: "Genesis", chapters: 50, folder: "01 Genesis" },
+                        { slug: "exodus", name: "Exodus", chapters: 40, folder: "02 Exodus" },
+                        { slug: "leviticus", name: "Leviticus", chapters: 27, folder: "03 Leviticus" },
+                        { slug: "numbers", name: "Numbers", chapters: 36, folder: "04 Numbers" },
+                        { slug: "deuteronomy", name: "Deuteronomy", chapters: 34, folder: "05 Deuteronomy" },
+                        { slug: "joshua", name: "Joshua", chapters: 24, folder: "06 Joshua" },
+                        { slug: "judges", name: "Judges", chapters: 21, folder: "07 Judges" },
+                        { slug: "ruth", name: "Ruth", chapters: 4, folder: "08 Ruth" },
+                        { slug: "1samuel", name: "1 Samuel", chapters: 31, folder: "09 1 Samuel" },
+                        { slug: "2samuel", name: "2 Samuel", chapters: 24, folder: "10 2 Samuel" },
+                        { slug: "1kings", name: "1 Kings", chapters: 22, folder: "11 1 Kings" },
+                        { slug: "2kings", name: "2 Kings", chapters: 25, folder: "12 2 Kings" },
+                        { slug: "1chronicles", name: "1 Chronicles", chapters: 29, folder: "13 1 Chronicles" },
+                        { slug: "2chronicles", name: "2 Chronicles", chapters: 36, folder: "14 2 Chronicles" },
+                        { slug: "ezra", name: "Ezra", chapters: 10, folder: "15 Ezra" },
+                        { slug: "nehemiah", name: "Nehemiah", chapters: 13, folder: "16 Nehemiah" },
+                        { slug: "esther", name: "Esther", chapters: 10, folder: "17 Esther" },
+                        { slug: "job", name: "Job", chapters: 42, folder: "18 Job" },
+                        { slug: "psalms", name: "Psalms", chapters: 150, folder: "19 Psalms" },
+                        { slug: "proverbs", name: "Proverbs", chapters: 31, folder: "20 Proverbs" },
+                        { slug: "ecclesiastes", name: "Ecclesiastes", chapters: 12, folder: "21 Ecclesiastes" },
+                        { slug: "songofsolomon", name: "Song of Solomon", chapters: 8, folder: "22 Song of Solomon" },
+                        { slug: "isaiah", name: "Isaiah", chapters: 66, folder: "23 Isaiah" },
+                        { slug: "jeremiah", name: "Jeremiah", chapters: 52, folder: "24 Jeremiah" },
+                        { slug: "lamentations", name: "Lamentations", chapters: 5, folder: "25 Lamentations" },
+                        { slug: "ezekiel", name: "Ezekiel", chapters: 48, folder: "26 Ezekiel" },
+                        { slug: "daniel", name: "Daniel", chapters: 12, folder: "27 Daniel" },
+                        { slug: "hosea", name: "Hosea", chapters: 14, folder: "28 Hosea" },
+                        { slug: "joel", name: "Joel", chapters: 3, folder: "29 Joel" },
+                        { slug: "amos", name: "Amos", chapters: 9, folder: "30 Amos" },
+                        { slug: "obadiah", name: "Obadiah", chapters: 1, folder: "31 Obadiah" },
+                        { slug: "jonah", name: "Jonah", chapters: 4, folder: "32 Jonah" },
+                        { slug: "micah", name: "Micah", chapters: 7, folder: "33 Micah" },
+                        { slug: "nahum", name: "Nahum", chapters: 3, folder: "34 Nahum" },
+                        { slug: "habakkuk", name: "Habakkuk", chapters: 3, folder: "35 Habakkuk" },
+                        { slug: "zephaniah", name: "Zephaniah", chapters: 3, folder: "36 Zephaniah" },
+                        { slug: "haggai", name: "Haggai", chapters: 2, folder: "37 Haggai" },
+                        { slug: "zechariah", name: "Zechariah", chapters: 14, folder: "38 Zechariah" },
+                        { slug: "malachi", name: "Malachi", chapters: 4, folder: "39 Malachi" }
+                    ]
+                },
+                {
+                    name: "New Testament",
+                    books: [
+                        { slug: "matthew", name: "Matthew", chapters: 28, folder: "01 Matthew" },
+                        { slug: "mark", name: "Mark", chapters: 16, folder: "02 Mark" },
+                        { slug: "luke", name: "Luke", chapters: 24, folder: "03 Luke" },
+                        { slug: "john", name: "John", chapters: 21, folder: "04 John" },
+                        { slug: "acts", name: "Acts", chapters: 28, folder: "05 Acts" },
+                        { slug: "romans", name: "Romans", chapters: 16, folder: "06 Romans" },
+                        { slug: "1corinthians", name: "1 Corinthians", chapters: 16, folder: "07 1 Corinthians" },
+                        { slug: "2corinthians", name: "2 Corinthians", chapters: 13, folder: "08 2 Corinthians" },
+                        { slug: "galatians", name: "Galatians", chapters: 6, folder: "09 Galatians" },
+                        { slug: "ephesians", name: "Ephesians", chapters: 6, folder: "10 Ephesians" },
+                        { slug: "philippians", name: "Philippians", chapters: 4, folder: "11 Philippians" },
+                        { slug: "colossians", name: "Colossians", chapters: 4, folder: "12 Colossians" },
+                        { slug: "1thessalonians", name: "1 Thessalonians", chapters: 5, folder: "13 1 Thessalonians" },
+                        { slug: "2thessalonians", name: "2 Thessalonians", chapters: 3, folder: "14 2 Thessalonians" },
+                        { slug: "1timothy", name: "1 Timothy", chapters: 6, folder: "15 1 Timothy" },
+                        { slug: "2timothy", name: "2 Timothy", chapters: 4, folder: "16 2 Timothy" },
+                        { slug: "titus", name: "Titus", chapters: 3, folder: "17 Titus" },
+                        { slug: "philemon", name: "Philemon", chapters: 1, folder: "18 Philemon" },
+                        { slug: "hebrews", name: "Hebrews", chapters: 13, folder: "19 Hebrews" },
+                        { slug: "james", name: "James", chapters: 5, folder: "20 James" },
+                        { slug: "1peter", name: "1 Peter", chapters: 5, folder: "21 1 Peter" },
+                        { slug: "2peter", name: "2 Peter", chapters: 3, folder: "22 2 Peter" },
+                        { slug: "1john", name: "1 John", chapters: 5, folder: "23 1 John" },
+                        { slug: "2john", name: "2 John", chapters: 1, folder: "24 2 John" },
+                        { slug: "3john", name: "3 John", chapters: 1, folder: "25 3 John" },
+                        { slug: "jude", name: "Jude", chapters: 1, folder: "26 Jude" },
+                        { slug: "revelation", name: "Revelation", chapters: 22, folder: "27 Revelation" }
+                    ]
+                },
+                {
+                    name: "Pearl of Great Price",
+                    books: [
+                        { slug: "moses", name: "Moses", chapters: 8, folder: "01 Moses" },
+                        { slug: "abraham", name: "Abraham", chapters: 5, folder: "02 Abraham" },
+                        { slug: "jsm", name: "Joseph Smith Matthew", chapters: 1, folder: "03 Joseph Smith Matthew" },
+                        { slug: "jsh", name: "Joseph Smith History", chapters: 1, folder: "04 Joseph Smith History" },
+                        { slug: "aof", name: "Articles of Faith", chapters: 1, folder: "05 Articles of Faith" }
+                    ]
+                }
+            ];
+
+            volumes.forEach(vol => {
+                vol.books.forEach(book => {
+                    for (let c = 1; c <= book.chapters; c++) {
+                        let cStr = c.toString().padStart(2, '0');
+                        let url = `${SCRIPTURE_BASE}/${encodeURIComponent(vol.name)}/${encodeURIComponent(book.folder)}/${book.slug}${cStr}.md`;
+                        links.push({ url, quoteBox: `${book.name} ${c}` });
+                    }
+                });
+            });
+
+            // Special handling for D&C (no folders, direct files)
+            for (let s = 1; s <= 138; s++) {
+                let sStr = s.toString().padStart(3, '0');
+                links.push({ url: `${SCRIPTURE_BASE}/Doctrine%20and%20Covenants/dc${sStr}.md`, quoteBox: `D&C ${s}` });
+            }
+            links.push({ url: `${SCRIPTURE_BASE}/Doctrine%20and%20Covenants/od1.md`, quoteBox: "Official Declaration 1" });
+            links.push({ url: `${SCRIPTURE_BASE}/Doctrine%20and%20Covenants/od2.md`, quoteBox: "Official Declaration 2" });
+
+            return links;
+        }
+
+        const SCRIPTURE_LINKS = generateScriptureLinks();
+        
+        let state = {
+            theme: 'glassmorphism',
+            lists: { 'General': [] },
+            activeList: 'General',
+            habits: [{ title: 'Scripture Study', desc: 'Detailed 30 min daily.', goal: 7, count: 0 }],
+            notepads: { 'Genesis': '# Ledger Alpha\nClick to edit Markdown code.' },
+            activeNote: 'Genesis',
+            portals: [
+                { name: 'Gospel Library', url: 'https://churchofjesuschrist.org/study' },
+                { name: 'GitHub Nexus', url: 'https://github.com' }
+            ],
+            time: 1500,
+            clockOn: false
+        };
+
+        const sync = () => localStorage.setItem('NEXUS_V8_MASTER', JSON.stringify(state));
+
+        const load = () => {
+            const raw = localStorage.getItem('NEXUS_V8_MASTER');
+            if (raw) state = JSON.parse(raw);
+            Object.keys(state.lists).forEach(list => {
+                state.lists[list] = state.lists[list].filter(t => {
+                    if (!t.completed) return true;
+                    return (Date.now() - t.completedAt) < (5 * 24 * 60 * 60 * 1000);
+                });
+            });
+            applyTheme(state.theme);
+        };
+
+        const openMod = (id) => document.getElementById(id).style.display = 'flex';
+        const closeMod = (id) => document.getElementById(id).style.display = 'none';
+
+        const toast = (msg) => {
+            const container = document.getElementById('nx-toast-container');
+            const t = document.createElement('div');
+            t.className = 'nx-toast';
+            t.innerHTML = `<i data-lucide="shield"></i> <span>${msg}</span>`;
+            container.appendChild(t);
+            lucide.createIcons();
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 500); }, 4000);
+        };
+
+        /**
+         * SCRIPTURE FETCHER ENGINE
+         * Fetches random chapter MD, extracts one H2 block (verse).
+         */
+        async function fetchScripture() {
+            const bar = document.getElementById('scripture-bar');
+            try {
+                const pick = SCRIPTURE_LINKS[Math.floor(Math.random() * SCRIPTURE_LINKS.length)];
+                const response = await fetch(pick.url);
+                if (!response.ok) throw new Error();
+                const text = await response.text();
+                
+                // Regex to find ## verse_number content
+                const verseMatch = text.match(/## (\d+)\n([\s\S]+?)(?=\n## |$)/);
+                if (verseMatch) {
+                    const verseNum = verseMatch[1];
+                    let verseText = verseMatch[2].replace(/\[\[.*?\]\]/g, '').trim();
+                    bar.innerText = `"${verseText}" — ${pick.quoteBox}:${verseNum}`;
+                } else {
+                    bar.innerText = `Feasting upon ${pick.quoteBox}`;
+                }
+            } catch (e) {
+                bar.innerText = "Feasting upon the words of Christ...";
+            }
+        }
+
+        /**
+         * TODO/WIDGET LOGIC
+         */
+        function renderTodos() {
+            const view = document.getElementById('todo-view');
+            view.innerHTML = '';
+            const tasks = state.lists[state.activeList] || [];
+
+            [...tasks].sort((a,b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1).forEach((t) => {
+                const el = document.createElement('div');
+                el.className = `todo-item ${t.completed ? 'completed' : ''}`;
+                el.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <h4 style="font-weight:800;">${t.title}</h4>
+                        <div style="display:flex; gap:0.5rem">
+                            ${!t.completed ? `<button class="nx-btn nx-btn-icon" style="background:var(--success)" onclick="completeTask('${t.title}')"><i data-lucide="check"></i></button>` : ''}
+                            <button class="nx-btn nx-btn-icon" style="background:var(--danger)" onclick="deleteTask('${t.title}')"><i data-lucide="trash"></i></button>
+                        </div>
+                    </div>
+                    <p style="font-size:0.8rem; opacity:0.5;">${t.desc || ''}</p>
+                `;
+                view.appendChild(el);
+            });
+            populateSelectors();
+            lucide.createIcons();
+            sync();
+        }
+
+        function completeTask(title) {
+            const t = state.lists[state.activeList].find(x => x.title === title);
+            t.completed = true; t.completedAt = Date.now();
+            renderTodos();
+            toast("Objective Secured.");
+        }
+
+        function deleteTask(title) {
+            state.lists[state.activeList] = state.lists[state.activeList].filter(x => x.title !== title);
+            renderTodos();
+        }
+
+        function spawnTodoCreator() {
+            const f = document.getElementById('creator-fields');
+            document.getElementById('creator-title').innerText = "Assign Objective";
+            f.innerHTML = `
+                <input type="text" id="c-todo-t" class="nx-input" placeholder="Mission Name">
+                <textarea id="c-todo-d" class="nx-input" style="height:100px; resize:none;" placeholder="Description"></textarea>
+            `;
+            document.getElementById('creator-save-btn').onclick = () => {
+                const t = document.getElementById('c-todo-t').value;
+                const d = document.getElementById('c-todo-d').value;
+                if(!t) return;
+                state.lists[state.activeList].push({ title: t, desc: d, completed: false });
+                closeMod('mod-creator');
+                renderTodos();
+            };
+            openMod('mod-creator');
+        }
+
+        /**
+         * HABIT LOGIC
+         */
+        function renderHabits() {
+            const view = document.getElementById('habit-view');
+            view.innerHTML = '';
+            state.habits.forEach((h, i) => {
+                const deg = (h.count / h.goal) * 360;
+                view.innerHTML += `
+                    <div class="habit-row">
+                        <div style="max-width: 60%">
+                            <h4 style="font-weight:800">${h.title}</h4>
+                            <p style="font-size:0.75rem; opacity:0.4">${h.desc}</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1.25rem">
+                             <div class="circular-wrap" style="background: conic-gradient(var(--accent-color) ${deg}deg, rgba(255,255,255,0.05) 0deg)">
+                                <div class="progress-val">${h.count}/${h.goal}</div>
+                             </div>
+                             <button class="nx-btn nx-btn-icon" onclick="bumpHabit(${i})"><i data-lucide="plus"></i></button>
+                        </div>
+                    </div>`;
+            });
+            lucide.createIcons();
+            sync();
+        }
+
+        function bumpHabit(i) {
+            if (state.habits[i].count < state.habits[i].goal) {
+                state.habits[i].count++; renderHabits();
+                if (state.habits[i].count === state.habits[i].goal) toast("Journey Milestone Reached.");
+            }
+        }
+
+        function spawnHabitCreator() {
+            const f = document.getElementById('creator-fields');
+            document.getElementById('creator-title').innerText = "Initiate Discipline";
+            f.innerHTML = `
+                <input type="text" id="h-t" class="nx-input" placeholder="Title">
+                <input type="text" id="h-d" class="nx-input" placeholder="Purpose">
+                <input type="number" id="h-g" class="nx-input" placeholder="Weekly Target">
+            `;
+            document.getElementById('creator-save-btn').onclick = () => {
+                const t = document.getElementById('h-t').value;
+                const d = document.getElementById('h-d').value;
+                const g = parseInt(document.getElementById('h-g').value);
+                if(t && g) state.habits.push({ title: t, desc: d, goal: g, count: 0 });
+                closeMod('mod-creator');
+                renderHabits();
+            };
+            openMod('mod-creator');
+        }
+
+        /**
+         * NOTEPAD ENGINE
+         */
+        function renderNote() {
+            const v = document.getElementById('note-view-html');
+            const data = state.notepads[state.activeNote];
+            v.innerHTML = marked.parse(data);
+            document.getElementById('note-edit-raw').value = data;
+            sync();
+        }
+
+        function activateNoteEditor() {
+            document.getElementById('note-view-html').style.visibility = 'hidden';
+            const ed = document.getElementById('note-edit-raw');
+            ed.style.visibility = 'visible'; ed.focus();
+        }
+
+        document.getElementById('note-edit-raw').addEventListener('blur', () => {
+            document.getElementById('note-edit-raw').style.visibility = 'hidden';
+            document.getElementById('note-view-html').style.visibility = 'visible';
+            state.notepads[state.activeNote] = document.getElementById('note-edit-raw').value;
+            renderNote();
+        });
+
+        function spawnNotepadCreator() {
+            const f = document.getElementById('creator-fields');
+            document.getElementById('creator-title').innerText = "Open New Archive";
+            f.innerHTML = `<input type="text" id="n-n" class="nx-input" placeholder="Volume Title">`;
+            document.getElementById('creator-save-btn').onclick = () => {
+                const n = document.getElementById('n-n').value;
+                if(!n) return;
+                state.notepads[n] = "# " + n + "\nBegin documentation...";
+                state.activeNote = n;
+                closeMod('mod-creator');
+                switchArchive();
+            };
+            openMod('mod-creator');
+        }
+
+        /**
+         * PORTAL ENGINE
+         */
+        function renderPortals() {
+            const v = document.getElementById('portal-view');
+            v.innerHTML = '';
+            state.portals.forEach((p, i) => {
+                v.innerHTML += `
+                    <div class="portal-item">
+                        <button class="portal-del-btn" onclick="killPortal(${i})"><i data-lucide="crosshair"></i></button>
+                        <div class="portal-icon-bg" onclick="window.open('${p.url}', '_blank')">
+                            <img src="https://www.google.com/s2/favicons?domain=${p.url}&sz=64" style="width:28px">
+                        </div>
+                        <span class="portal-label">${p.name}</span>
+                    </div>`;
+            });
+            lucide.createIcons();
+            sync();
+        }
+
+        function spawnPortalCreator() {
+            const f = document.getElementById('creator-fields');
+            document.getElementById('creator-title').innerText = "Tether Gateway";
+            f.innerHTML = `
+                <input type="text" id="p-n" class="nx-input" placeholder="Name">
+                <input type="text" id="p-u" class="nx-input" placeholder="URL (https://...)">
+            `;
+            document.getElementById('creator-save-btn').onclick = () => {
+                const n = document.getElementById('p-n').value;
+                const u = document.getElementById('p-u').value;
+                if(n && u) state.portals.push({ name: n, url: u });
+                closeMod('mod-creator');
+                renderPortals();
+            };
+            openMod('mod-creator');
+        }
+
+        function killPortal(i) { state.portals.splice(i, 1); renderPortals(); }
+
+        /**
+         * CHRONOS
+         */
+        let clockInt;
+        function updateClock() {
+            const m = Math.floor(state.time / 60); const s = state.time % 60;
+            document.getElementById('clock').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function toggleClock() {
+            if(state.clockOn) {
+                clearInterval(clockInt); document.getElementById('clock-toggle').innerText = "Engage";
+            } else {
+                clockInt = setInterval(() => {
+                    if(state.time > 0) { state.time--; updateClock(); }
+                    else { clearInterval(clockInt); toast("Temporal protocol finished."); }
+                }, 1000);
+                document.getElementById('clock-toggle').innerText = "Cease";
+            }
+            state.clockOn = !state.clockOn;
+        }
+
+        function applyTime() {
+            const min = parseInt(document.getElementById('t-min').value) || 0;
+            const sec = parseInt(document.getElementById('t-sec').value) || 0;
+            state.time = (min * 60) + sec; updateClock();
+        }
+
+        function resetClock() {
+            clearInterval(clockInt); state.clockOn = false; state.time = 1500;
+            updateClock(); document.getElementById('clock-toggle').innerText = "Engage";
+        }
+
+        /**
+         * SELECTORS
+         */
+        function populateSelectors() {
+            const t = document.getElementById('todo-list-sel'); t.innerHTML = '';
+            Object.keys(state.lists).forEach(k => {
+                const o = document.createElement('option'); o.value = o.innerText = k;
+                if(k === state.activeList) o.selected = true; t.appendChild(o);
+            });
+            const n = document.getElementById('notes-sel'); n.innerHTML = '';
+            Object.keys(state.notepads).forEach(k => {
+                const o = document.createElement('option'); o.value = o.innerText = k;
+                if(k === state.activeNote) o.selected = true; n.appendChild(o);
+            });
+        }
+
+        function switchWorkspace() { state.activeList = document.getElementById('todo-list-sel').value; renderTodos(); }
+        function switchArchive() { state.activeNote = document.getElementById('notes-sel').value; renderNote(); populateSelectors(); }
+
+        function spawnWorkspaceCreator() {
+            const f = document.getElementById('creator-fields');
+            document.getElementById('creator-title').innerText = "New Radius";
+            f.innerHTML = `<input type="text" id="w-n" class="nx-input" placeholder="Name">`;
+            document.getElementById('creator-save-btn').onclick = () => {
+                const n = document.getElementById('w-n').value;
+                if(!n) return; state.lists[n] = []; state.activeList = n;
+                closeMod('mod-creator'); renderTodos();
+            };
+            openMod('mod-creator');
+        }
+
+        function applyTheme(t) { document.documentElement.setAttribute('data-theme', t); state.theme = t; sync(); }
+
+        window.onload = () => {
+            load();
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(() => {
+                    document.getElementById('weather-node').innerHTML = `<i data-lucide="sun"></i> 72°F VIBRANT`;
+                    lucide.createIcons();
+                }, () => {});
+            }
+            fetchScripture();
+            renderTodos(); renderHabits(); renderPortals(); renderNote(); updateClock();
+            lucide.createIcons();
+            toast("System core online.");
+        };
+
+    </script>
+</body>
+</html>
