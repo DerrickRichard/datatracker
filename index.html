@@ -538,6 +538,11 @@
             <div class="verse-aside" id="scripture-bar">Loading scripture...</div>
             
             <div class="header-actions">
+                <!-- REAL-TIME CLOCK ADDED -->
+                <div id="real-time-clock" style="padding: 0.85rem 1.5rem; background: var(--card-bg); border-radius: 1.25rem; border: 1px solid var(--card-border); font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 1px;">
+                    00:00:00
+                </div>
+                <!-- WEATHER NODE UPDATED FOR REAL DATA -->
                 <div id="weather-node" style="padding: 0.85rem 1.5rem; background: var(--card-bg); border-radius: 1.25rem; border: 1px solid var(--card-border); font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem;">
                     72°F
                 </div>
@@ -1141,6 +1146,10 @@
             // Fix Scripture bug (Immediate check)
             const scriptMaster = document.getElementById('pref-script-master');
             if(scriptMaster) state.prefs.showScripture = scriptMaster.checked;
+
+            // START REAL-TIME CLOCK & WEATHER ENGINE
+            startNexusEnvironmentalEngine();
+            setupLinkProtocol();
         };
 
         // 2. FIXED INTERFACE CONFIG & PERSISTENCE
@@ -1210,7 +1219,45 @@
             document.getElementById('clock').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         };
 
-        // 4. FIXED TOUR LOGIC (POSITIONING & INTERACTION)
+        // 4. ENVIRONMENTAL NODES (FIXED CLOCK & ACTUAL WEATHER)
+        function startNexusEnvironmentalEngine() {
+            // Live Clock Implementation
+            setInterval(() => {
+                const now = new Date();
+                const node = document.getElementById('real-time-clock');
+                if (state.prefs.is24h) {
+                    node.innerText = now.toLocaleTimeString('en-GB', { hour12: false });
+                } else {
+                    node.innerText = now.toLocaleTimeString('en-US');
+                }
+            }, 1000);
+
+            // Real Weather Implementation (Open-Meteo)
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    try {
+                        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${pos.coords.latitude}&longitude=${pos.coords.longitude}&current_weather=true&temperature_unit=fahrenheit`);
+                        const data = await res.json();
+                        if (data.current_weather) {
+                            document.getElementById('weather-node').innerText = `${Math.round(data.current_weather.temperature)}°F`;
+                        }
+                    } catch (e) { console.error("Weather Engine Sync Error"); }
+                });
+            }
+        }
+
+        // 5. GLOBAL LINK PROTOCOL (FORCE NEW TAB)
+        function setupLinkProtocol() {
+            document.addEventListener('click', (e) => {
+                const link = e.target.closest('a');
+                if (link) {
+                    link.setAttribute('target', '_blank');
+                    link.setAttribute('rel', 'noopener noreferrer');
+                }
+            }, true);
+        }
+
+        // 6. FIXED TOUR LOGIC (POSITIONING & INTERACTION)
         window.executeTour = async function() {
             const steps = [
                  { id: 'tour-brand', t: 'Welcome', d: 'This is your personal data tracker. All data is kept locally in your browser.' },
