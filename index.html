@@ -455,7 +455,7 @@
 
             <label style="display:flex; align-items:center; gap: 1rem; cursor: pointer; margin-bottom: 1rem;">
                 <input type="checkbox" id="pref-script-master" checked style="width: 22px; height: 22px;">
-                <span>Show Daily Scripture Bar</span>
+                <span>Show Scripture Bar</span>
             </label>
 
             <label style="display:flex; align-items:center; gap: 1rem; cursor: pointer; margin-bottom: 3rem;">
@@ -507,7 +507,7 @@
             <div class="settings-sec">
                 <span class="settings-label">System Preferences</span>
                 <div class="toggle-row"><span>Clock: 24-Hour</span> <input type="checkbox" id="set-24h" onchange="updateInterfaceConfig()"></div>
-                <div class="toggle-row"><span>LDS Source Protocol</span> <input type="checkbox" id="set-lds" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row"><span>Include LDS Scriptures</span> <input type="checkbox" id="set-lds" checked onchange="updateInterfaceConfig()"></div>
             </div>
 
             <button class="nx-btn" style="margin-top: 1rem; width: 100%; justify-content: center; background: var(--accent-color);" onclick="closeMod('mod-theme')">Apply & Exit</button>
@@ -535,11 +535,11 @@
             <div id="tour-brand">
                 <h1 style="font-size: 3rem; font-weight: 950; letter-spacing: -2px;">NEXUS<span style="color: var(--accent-color);">.</span></h1>
             </div>
-            <div class="verse-aside" id="scripture-bar">Accessing scripture archive...</div>
+            <div class="verse-aside" id="scripture-bar">Loading scripture...</div>
             
             <div class="header-actions">
                 <div id="weather-node" style="padding: 0.85rem 1.5rem; background: var(--card-bg); border-radius: 1.25rem; border: 1px solid var(--card-border); font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem;">
-                    72°F STABLE
+                    72°F
                 </div>
                 <button class="nx-btn nx-btn-icon" id="tour-settings" onclick="openMod('mod-theme')"><i data-lucide="settings"></i></button>
             </div>
@@ -609,7 +609,7 @@
             <!-- NOTE ARCHIVE -->
             <section class="nx-card grid-md row-2" id="tour-notes">
                 <div class="nx-card-header">
-                    <span class="nx-card-title"><i data-lucide="file-text"></i> Ledger Notes</span>
+                    <span class="nx-card-title"><i data-lucide="file-text"></i> Notepad</span>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="nx-btn nx-btn-icon" onclick="spawnNotepadCreator()"><i data-lucide="plus-circle"></i></button>
                         <select id="notes-sel" class="nx-btn" onchange="switchArchive()"></select>
@@ -619,7 +619,7 @@
                     <textarea class="notepad-editor" id="note-edit-raw"></textarea>
                     <div class="notepad-viewer" id="note-view-html" onclick="activateNoteEditor()"></div>
                 </div>
-                <div style="margin-top: 1rem; text-align: right; font-size: 0.7rem; opacity: 0.2; font-family: var(--font-mono);">MARKDOWN SYNC ACTIVE</div>
+                <div style="margin-top: 1rem; text-align: right; font-size: 0.7rem; opacity: 0.2; font-family: var(--font-mono);">Markdown supported</div>
             </section>
 
         </main>
@@ -676,7 +676,7 @@
     </div>
 
     <footer style="margin-top: 15rem; text-align: center; opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px; font-weight: 950; font-family:var(--font-mono)">
-        PROJECT NEXUS // SYSTEM ARCHITECTURE REVISION 12.1 // LOCAL SOURCE PERSISTENCE SECURED // FULL FIDELITY DIRECTORY ACTIVE
+        All data is saved in Local Storage, and is only accessible on this device. Clearing cookies will result in your data being lost.
     </footer>
 </div>
 
@@ -704,7 +704,7 @@
                 const response = await fetch(selectedSource);
                 
                 if (!response.ok) {
-                    bar.innerText = "Scripture archive not found. Ensure .txt files are in local folder.";
+                    bar.innerText = "Error loading scripture. Please try again later. :(";
                     return;
                 }
                 
@@ -758,7 +758,7 @@
             lists: { 'Default': [] },
             activeList: 'Default',
             habits: [],
-            notepads: { 'Ledger 1': '# Workspace\nBegin typing markdown here.' },
+            notepads: { 'Ledger 1': '# Notepad\nBegin typing  here. Markdown cheatsheet: https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet' },
             activeNote: 'Ledger 1',
             portals: [],
             time: 1500,
@@ -1080,8 +1080,8 @@
 
         async function executeTour() {
             const steps = [
-                { id: 'tour-brand', t: 'Welcome', d: 'This is your central command. All data is kept locally in your browser.' },
-                { id: 'scripture-bar', t: 'Scripture', d: 'A daily verse from your archives is selected here on every refresh.' },
+                { id: 'tour-brand', t: 'Welcome', d: 'This is your personal data tracker. All data is kept locally in your browser.' },
+                { id: 'scripture-bar', t: 'Scripture', d: 'A scripture verse is selected here on every refresh.' },
                 { id: 'tour-tasks', t: 'Tasks', d: 'Manage multiple task lists. Completed items move to the bottom automatically.' },
                 { id: 'tour-timer', t: 'Time', d: 'Use this Pomodoro clock to keep yourself focused during work.' },
                 { id: 'tour-habits', t: 'Habits', d: 'Track recurring weekly goals and visually monitor your progress.' }
@@ -1109,7 +1109,7 @@
                     };
                 });
             }
-            triggerToast("Onboarding complete. Enjoy your dashboard.");
+            triggerToast("Tour Complete!");
         }
 
         // --- BOOTSTRAP ---
@@ -1213,13 +1213,13 @@
         // 4. FIXED TOUR LOGIC (POSITIONING & INTERACTION)
         window.executeTour = async function() {
             const steps = [
-                { id: 'tour-brand', t: 'Welcome to Nexus', d: 'Your personal command center. Everything here is stored in your browser—no cloud, no tracking.' },
-                { id: 'scripture-bar', t: 'Ancient Wisdom', d: 'A daily verse from your chosen archives. You can toggle LDS sources in Settings.' },
-                { id: 'tour-tasks', t: 'Dynamic Ledger', d: 'Create multiple lists. Use unique IDs to support duplicate task names without conflicts.' },
-                { id: 'tour-timer', t: 'Focus State', d: 'A Pomodoro timer for deep work sessions. Sessions are logged via local telemetry.' },
-                { id: 'tour-habits', t: 'Habit Tracker', d: 'Track progress toward your weekly goals with interactive progress rings.' },
-                { id: 'tour-links', t: 'Shortcuts', d: 'Quick-access portals to your most visited external resources.' },
-                { id: 'tour-notes', t: 'Note Archive', d: 'Markdown-ready ledger for your long-form thoughts and knowledge base.' },
+                 { id: 'tour-brand', t: 'Welcome', d: 'This is your personal data tracker. All data is kept locally in your browser.' },
+                { id: 'scripture-bar', t: 'Scripture', d: 'A scripture verse is selected here on every refresh.' },
+                { id: 'tour-tasks', t: 'Tasks', d: 'Manage multiple task lists. Completed items move to the bottom automatically.' },
+                { id: 'tour-timer', t: 'Time', d: 'Use this Pomodoro clock to keep yourself focused during work.' },
+                { id: 'tour-habits', t: 'Habits', d: 'Track recurring weekly goals and visually monitor your progress.' },
+                { id: 'tour-links', t: 'Shortcuts', d: 'Quick access links to your most visited websites.' },
+                { id: 'tour-notes', t: 'Notepad', d: 'Markdown supported notepad for writing notes.' },
                 { id: 'tour-settings', t: 'Full Control', d: 'Customize colors, modules, and themes here. Experiment with the OLED mode!' }
             ];
 
@@ -1262,12 +1262,12 @@
                     bubble.querySelector('#tour-skip').onclick = () => {
                         el.classList.remove('tour-highlight');
                         bubble.remove();
-                        triggerToast("Tour completed early.");
+                        triggerToast("Tour Complete!");
                         throw "SKIP_TOUR";
                     };
                 }).catch(e => { if(e === "SKIP_TOUR") return; });
             }
-            triggerToast("Onboarding complete. Use Settings to hide modules you don't need.");
+            triggerToast("Tour Complete!");
         };
 
     </script>
