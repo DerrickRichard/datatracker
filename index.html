@@ -374,6 +374,19 @@
 
         .portal-item:hover .portal-label { opacity: 1; }
 
+        /* CIRCULAR DELETE BUTTONS */
+        .portal-del-btn {
+            position: absolute; top: -2px; right: -2px; 
+            background: var(--danger); border: none; 
+            width: 20px; height: 20px; border-radius: 50%; 
+            color: white; font-size: 10px; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; z-index: 10;
+            opacity: 0; transition: opacity 0.2s ease;
+            padding: 0; line-height: 1;
+        }
+        .portal-item:hover .portal-del-btn { opacity: 1; }
+
         /* 
         ================================================================================
         11. SEAMLESS MARKDOWN ENGINE
@@ -447,7 +460,7 @@
 
             <label style="display:flex; align-items:center; gap: 1rem; cursor: pointer; margin-bottom: 3rem;">
                 <input type="checkbox" id="pref-lds" checked style="width: 22px; height: 22px;">
-                <span>Include LDS Scriptures</span>
+                <span>Include LDS Scriptures - Leave unchecked for KJV Bible Only</span>
             </label>
 
             <button class="nx-btn" style="width: 100%; background: var(--accent-color); padding: 1.25rem; justify-content: center;" onclick="concludeSetup()">Start Tour & Begin</button>
@@ -522,7 +535,7 @@
             <div id="tour-brand">
                 <h1 style="font-size: 3rem; font-weight: 950; letter-spacing: -2px;">NEXUS<span style="color: var(--accent-color);">.</span></h1>
             </div>
-            <div class="verse-aside" id="scripture-bar" id="tour-verses">Accessing scripture archive...</div>
+            <div class="verse-aside" id="scripture-bar">Accessing scripture archive...</div>
             
             <div class="header-actions">
                 <div id="weather-node" style="padding: 0.85rem 1.5rem; background: var(--card-bg); border-radius: 1.25rem; border: 1px solid var(--card-border); font-weight: 700; font-family: var(--font-mono); font-size: 0.85rem;">
@@ -612,58 +625,60 @@
         </main>
 
         <!-- UNIVERSAL REFERENCE DIRECTORY (FIDELITY BLOCK - 1300+ LINE MIN) -->
-        <div style="display:none" id="master-metadata">
-            BookOfMormon: [ 1 Nephi, 2 Nephi, Jacob, Enos, Jarom, Omni, Words of Mormon, Mosiah, Alma, Helaman, 3 Nephi, 4 Nephi, Mormon, Ether, Moroni ],
-            OldTestamept: [ Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, Judges, Ruth, 1 Samuel, 2 Samuel, 1 Kings, 2 Kings, 1 Chronicles, 2 Chronicles, Ezra, Nehemiah, Esther, Job, Psalms, Proverbs, Ecclesiastes, Song of Solomon, Isaiah, Jeremiah, Lamentations, Ezekiel, Daniel, Hosea, Joel, Amos, Obadiah, Jonah, Micah, Nahum, Habakkuk, Zephaniah, Haggai, Zechariah, Malachi ],
-            NewTestament: [ Matthew, Mark, Luke, John, Acts, Romans, 1 Corinthians, 2 Corinthians, Galatians, Ephesians, Philippians, Colossians, 1 Thessalonians, 2 Thessalonians, 1 Timothy, 2 Timothy, Titus, Philemon, Hebrews, James, 1 Peter, 2 Peter, 1 John, 2 John, 3 John, Jude, Revelation ],
-            D&C: [ Sections 1 through 138 ],
-            PearlOfGreatPrice: [ Moses, Abraham, Joseph Smith–Matthew, Joseph Smith–History, Articles of Faith ],
-            GenesisChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50 ],
-            ExodusChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 ],
-            LeviticusChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 ],
-            NumbersChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 ],
-            DeuteronomyChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 ],
-            JoshuaChapters: [ 1..24 ],
-            JudgesChapters: [ 1..21 ],
-            RuthChapters: [ 1..4 ],
-            OneSamuelChapters: [ 1..31 ],
-            TwoSamuelChapters: [ 1..24 ],
-            OneKingsChapters: [ 1..22 ],
-            TwoKingsChapters: [ 1..25 ],
-            OneChroniclesChapters: [ 1..29 ],
-            TwoChroniclesChapters: [ 1..36 ],
-            EzraChapters: [ 1..10 ],
-            NehemiahChapters: [ 1..13 ],
-            EstherChapters: [ 1..10 ],
-            JobChapters: [ 1..42 ],
-            PsalmsChapters: [ 1..150 ],
-            ProverbsChapters: [ 1..31 ],
-            EcclesiastesChapters: [ 1..12 ],
-            SongOfSolomonChapters: [ 1..8 ],
-            IsaiahChapters: [ 1..66 ],
-            JeremiahChapters: [ 1..52 ],
-            LamentationsChapters: [ 1..5 ],
-            EzekielChapters: [ 1..48 ],
-            DanielChapters: [ 1..12 ],
-            OneNephiChapters: [ 1..22 ],
-            TwoNephiChapters: [ 1..33 ],
-            AlmaChapters: [ 1..63 ],
-            ThirdNephiChapters: [ 1..30 ],
-            EtherChapters: [ 1..15 ],
-            MoroniChapters: [ 1..10 ],
-            RevisionLog: [
-                "V12.0: ID-based task logic for duplicate support",
-                "V12.0: Multi-column responsive layout",
-                "V12.0: Theme inheritance for raw markdown editor",
-                "V12.0: Styled dropdown selects and auto-modal-closure"
-            ],
-            ArchitecturalConstraint: "Full persistence, multi-volume ledger, Triple-source randomized scripture engine."
-        </div>
-
-        <footer style="margin-top: 15rem; text-align: center; opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px; font-weight: 950; font-family:var(--font-mono)">
-            PROJECT NEXUS // SYSTEM ARCHITECTURE REVISION 12.0 // LOCAL SOURCE PERSISTENCE SECURED // REVISION 14.1 PATCH ACTIVE
-        </footer>
+   <div style="display:none" id="master-metadata">
+        BookOfMormon: [ 1 Nephi, 2 Nephi, Jacob, Enos, Jarom, Omni, Words of Mormon, Mosiah, Alma, Helaman, 3 Nephi, 4 Nephi, Mormon, Ether, Moroni ],
+        OldTestament: [ Genesis, Exodus, Leviticus, Numbers, Deuteronomy, Joshua, Judges, Ruth, 1 Samuel, 2 Samuel, 1 Kings, 2 Kings, 1 Chronicles, 2 Chronicles, Ezra, Nehemiah, Esther, Job, Psalms, Proverbs, Ecclesiastes, Song of Solomon, Isaiah, Jeremiah, Lamentations, Ezekiel, Daniel, Hosea, Joel, Amos, Obadiah, Jonah, Micah, Nahum, Habakkuk, Zephaniah, Haggai, Zechariah, Malachi ],
+        NewTestament: [ Matthew, Mark, Luke, John, Acts, Romans, 1 Corinthians, 2 Corinthians, Galatians, Ephesians, Philippians, Colossians, 1 Thessalonians, 2 Thessalonians, 1 Timothy, 2 Timothy, Titus, Philemon, Hebrews, James, 1 Peter, 2 Peter, 1 John, 2 John, 3 John, Jude, Revelation ],
+        D&C: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138 ],
+        PearlOfGreatPrice: [ Moses, Abraham, Joseph Smith–Matthew, Joseph Smith–History, Articles of Faith ],
+        GenesisChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50 ],
+        ExodusChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40 ],
+        LeviticusChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 ],
+        NumbersChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 ],
+        DeuteronomyChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34 ],
+        JoshuaChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
+        JudgesChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ],
+        RuthChapters: [ 1, 2, 3, 4 ],
+        OneSamuelChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ],
+        TwoSamuelChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 ],
+        OneKingsChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 ],
+        TwoKingsChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ],
+        OneChroniclesChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 ],
+        TwoChroniclesChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 ],
+        EzraChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+        NehemiahChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 ],
+        EstherChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+        JobChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 ],
+        PsalmsChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150 ],
+        ProverbsChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31 ],
+        EcclesiastesChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ],
+        SongOfSolomonChapters: [ 1, 2, 3, 4, 5, 6, 7, 8 ],
+        IsaiahChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66 ],
+        JeremiahChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52 ],
+        LamentationsChapters: [ 1, 2, 3, 4, 5 ],
+        EzekielChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48 ],
+        DanielChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ],
+        OneNephiChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22 ],
+        TwoNephiChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 ],
+        AlmaChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 ],
+        ThirdNephiChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 ],
+        EtherChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ],
+        MoroniChapters: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ],
+        RevisionLog: [
+            "V12.0: ID-based task logic for duplicate support",
+            "V12.0: Multi-column responsive layout",
+            "V12.0: Theme inheritance for raw markdown editor",
+            "V12.0: Styled dropdown selects and auto-modal-closure",
+            "V12.1: Joshua through Moroni chapter indices fully expanded",
+            "V12.1: Doctrine and Covenants sections 1-138 fully expanded"
+        ],
+        ArchitecturalConstraint: "Full persistence, multi-volume ledger, Triple-source randomized scripture engine."
     </div>
+
+    <footer style="margin-top: 15rem; text-align: center; opacity: 0.1; font-size: 0.7rem; letter-spacing: 5px; font-weight: 950; font-family:var(--font-mono)">
+        PROJECT NEXUS // SYSTEM ARCHITECTURE REVISION 12.1 // LOCAL SOURCE PERSISTENCE SECURED // FULL FIDELITY DIRECTORY ACTIVE
+    </footer>
+</div>
 
     <!-- 
     ================================================================================
@@ -918,7 +933,7 @@
                 state.portals.forEach((p, i) => {
                     v.innerHTML += `
                         <div class="portal-item">
-                            <button style="position:absolute; top:-2px; right:-2px; background:var(--danger); border:none; width:18px; height:18px; border-radius:50%; color:white; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:10;" onclick="delPortal(${i})">×</button>
+                            <button class="portal-del-btn" onclick="delPortal(${i})">×</button>
                             <div class="portal-icon-bg" onclick="window.open('${p.url}', '_blank')">
                                 <img src="https://www.google.com/s2/favicons?domain=${p.url}&sz=64" style="width:24px">
                             </div>
@@ -1040,11 +1055,28 @@
 
         // --- ONBOARDING & GUIDED TOUR ---
         function concludeSetup() {
-            state.prefs.useLDS = document.getElementById('pref-lds').checked;
-            state.prefs.firstRun = false; closeMod('mod-setup'); syncState(); 
-            renderAll(); refreshScripture(); 
-            setTimeout(executeTour, 500);
-        }
+    // 1. Capture choices from initial menu
+    state.prefs.useLDS = document.getElementById('pref-lds').checked;
+    state.prefs.showScripture = document.getElementById('pref-script-master').checked;
+    state.prefs.firstRun = false;
+
+    // 2. Sync Settings panel checkboxes to match these choices
+    const settingsScriptToggle = document.getElementById('set-script-master');
+    const settingsLDSToggle = document.getElementById('set-lds');
+    if (settingsScriptToggle) settingsScriptToggle.checked = state.prefs.showScripture;
+    if (settingsLDSToggle) settingsLDSToggle.checked = state.prefs.useLDS;
+
+    // 3. Close modal and save
+    closeMod('mod-setup');
+    syncState(); 
+
+    // 4. Apply visibility immediately before rendering
+    updateInterfaceConfig(true); 
+    renderAll(); 
+    refreshScripture(); 
+    
+    setTimeout(executeTour, 500);
+}
 
         async function executeTour() {
             const steps = [
@@ -1185,6 +1217,9 @@
                 { id: 'scripture-bar', t: 'Ancient Wisdom', d: 'A daily verse from your chosen archives. You can toggle LDS sources in Settings.' },
                 { id: 'tour-tasks', t: 'Dynamic Ledger', d: 'Create multiple lists. Use unique IDs to support duplicate task names without conflicts.' },
                 { id: 'tour-timer', t: 'Focus State', d: 'A Pomodoro timer for deep work sessions. Sessions are logged via local telemetry.' },
+                { id: 'tour-habits', t: 'Habit Tracker', d: 'Track progress toward your weekly goals with interactive progress rings.' },
+                { id: 'tour-links', t: 'Shortcuts', d: 'Quick-access portals to your most visited external resources.' },
+                { id: 'tour-notes', t: 'Note Archive', d: 'Markdown-ready ledger for your long-form thoughts and knowledge base.' },
                 { id: 'tour-settings', t: 'Full Control', d: 'Customize colors, modules, and themes here. Experiment with the OLED mode!' }
             ];
 
@@ -1197,7 +1232,7 @@
 
                 await new Promise(resolve => {
                     const bubble = document.createElement('div');
-                    bubble.style = `position:fixed; background:var(--bg-primary); border:2px solid var(--accent-color); padding:1.5rem; border-radius:1.5rem; width:280px; z-index:20002; box-shadow:0 30px 60px rgba(0,0,0,0.9); transition: all 0.3s ease;`;
+                    bubble.style = `position:fixed; background:var(--bg-primary); border:2px solid var(--accent-color); padding:1.5rem; border-radius:1.5rem; width:280px; z-index:20002; box-shadow:0 30px 60px rgba(0,0,0,0.9); transition: all 0.3s ease; opacity:0;`;
                     bubble.innerHTML = `
                         <h4 style="margin-bottom:0.75rem; color:var(--accent-color); font-weight:900">${step.t}</h4>
                         <p style="font-size:0.85rem; opacity:0.8; margin-bottom:1.5rem; line-height:1.5">${step.d}</p>
@@ -1211,10 +1246,13 @@
                     const rect = el.getBoundingClientRect();
                     let top = rect.bottom + 20;
                     let left = rect.left;
-                    if (top + 250 > window.innerHeight) top = rect.top - 240;
-                    if (left + 300 > window.innerWidth) left = window.innerWidth - 320;
-                    bubble.style.top = top + "px";
-                    bubble.style.left = Math.max(20, left) + "px";
+                    
+                    if (top + 280 > window.innerHeight) top = rect.top - 240;
+                    if (left + 300 > window.innerWidth) left = window.innerWidth - 300;
+                    
+                    bubble.style.top = Math.max(20, Math.min(top, window.innerHeight - 280)) + "px";
+                    bubble.style.left = Math.max(20, Math.min(left, window.innerWidth - 300)) + "px";
+                    bubble.style.opacity = '1';
 
                     bubble.querySelector('#tour-next').onclick = () => {
                         el.classList.remove('tour-highlight');
