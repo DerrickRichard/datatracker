@@ -56,7 +56,7 @@
             --card-border: #00ffff;
             --text-main: #00ffff;
             --text-dim: #008888;
-            /* SLIDER FIX: Removed forced 0px blur so user slider works in cyberpunk */
+            --panel-blur: 0px;
         }
 
         [data-theme="midnight"] {
@@ -68,7 +68,7 @@
             --card-border: #222222;
             --text-main: #ffffff;
             --text-dim: #555555;
-            /* SLIDER FIX: Removed forced 0px blur so user slider works in midnight */
+            --panel-blur: 0px;
         }
 
         /* 
@@ -352,7 +352,7 @@
         .portal-item {
             position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
             cursor: pointer; transition: 0.3s;
-            overflow: visible; /* FIXED OVERFLOW FOR CIRCULAR BUTTONS */
+            overflow: hidden;
             width: 80px;
         }
 
@@ -376,14 +376,13 @@
 
         /* CIRCULAR DELETE BUTTONS */
         .portal-del-btn {
-            position: absolute; top: -8px; right: -8px; 
+            position: absolute; top: -2px; right: -2px; 
             background: var(--danger); border: none; 
-            width: 26px; height: 26px; border-radius: 50%; 
-            color: white; font-size: 14px; 
+            width: 20px; height: 20px; border-radius: 50%; 
+            color: white; font-size: 10px; 
             display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; z-index: 50;
-            opacity: 0; transition: opacity 0.2s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            cursor: pointer; z-index: 10;
+            opacity: 0; transition: opacity 0.2s ease;
             padding: 0; line-height: 1;
         }
         .portal-item:hover .portal-del-btn { opacity: 1; }
@@ -488,6 +487,10 @@
                     <span>Accent Primary</span>
                     <input type="color" id="set-accent-color" oninput="updateInterfaceConfig()" style="border:none; background:none; cursor:pointer">
                 </div>
+                <div class="toggle-row">
+                    <span>Glass Intensity</span>
+                    <input type="range" id="set-blur" class="range-styled" min="0" max="64" oninput="updateInterfaceConfig()">
+                </div>
             </div>
 
             <div class="settings-sec">
@@ -496,7 +499,7 @@
                 <div class="toggle-row"><span>Focus Timer</span> <input type="checkbox" id="vis-timer" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Habit Tracker</span> <input type="checkbox" id="vis-habits" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Shortcuts</span> <input type="checkbox" id="vis-links" checked onchange="updateInterfaceConfig()"></div>
-                <div class="toggle-row"><span>Notepad</span> <input type="checkbox" id="vis-notes" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row"><span>Note Archive</span> <input type="checkbox" id="vis-notes" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Daily Scripture</span> <input type="checkbox" id="set-script-master" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Weather Node</span> <input type="checkbox" id="vis-weather" checked onchange="updateInterfaceConfig()"></div>
             </div>
@@ -504,7 +507,7 @@
             <div class="settings-sec">
                 <span class="settings-label">System Preferences</span>
                 <div class="toggle-row"><span>Clock: 24-Hour</span> <input type="checkbox" id="set-24h" onchange="updateInterfaceConfig()"></div>
-                <div class="toggle-row"><span>Include LDS Scriptures - Unmark for KJV Bible Only</span> <input type="checkbox" id="set-lds" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row"><span>Include LDS Scriptures</span> <input type="checkbox" id="set-lds" checked onchange="updateInterfaceConfig()"></div>
             </div>
 
             <button class="nx-btn" style="margin-top: 1rem; width: 100%; justify-content: center; background: var(--accent-color);" onclick="closeMod('mod-theme')">Apply & Exit</button>
@@ -952,12 +955,8 @@
             f.innerHTML = `<input type="text" id="in-p-n" class="nx-input" placeholder="Name"><input type="text" id="in-p-u" class="nx-input" placeholder="URL">`;
             document.getElementById('creator-save-btn').onclick = () => {
                 const n = document.getElementById('in-p-n').value;
-                let u = document.getElementById('in-p-u').value;
-                if(n && u) {
-                    // Protocol check fix: ensures link does not resolve as a subfolder
-                    if (!/^https?:\/\//i.test(u) && !u.startsWith('//')) { u = 'https://' + u; }
-                    state.portals.push({ name: n, url: u });
-                }
+                const u = document.getElementById('in-p-u').value;
+                if(n && u) state.portals.push({ name: n, url: u });
                 closeMod('mod-creator');
                 renderPortalSection();
             };
@@ -1000,13 +999,7 @@
         }
 
         // --- SELECTORS & THEMES ---
-        function applyThemeUI(t) { 
-            document.documentElement.setAttribute('data-theme', t); 
-            state.theme = t; 
-            syncState(); 
-            // FIXED: Updating config now forces slider values to re-bind to the new theme
-            if(typeof updateInterfaceConfig === "function") updateInterfaceConfig(true); 
-        }
+        function applyThemeUI(t) { document.documentElement.setAttribute('data-theme', t); state.theme = t; syncState(); }
 
         function refreshSelectors() {
             const tSel = document.getElementById('todo-list-sel'); tSel.innerHTML = '';
@@ -1163,6 +1156,7 @@
         function updateInterfaceConfig(init = false) {
             const ui = {
                 accent: document.getElementById('set-accent-color'),
+                blur: document.getElementById('set-blur'),
                 script: document.getElementById('set-script-master'),
                 is24: document.getElementById('set-24h'),
                 lds: document.getElementById('set-lds')
@@ -1170,6 +1164,7 @@
 
             if(!init) {
                 state.prefs.accentColor = ui.accent.value;
+                state.prefs.blur = ui.blur.value;
                 state.prefs.showScripture = ui.script.checked;
                 state.prefs.is24h = ui.is24.checked;
                 state.prefs.useLDS = ui.lds.checked;
@@ -1183,6 +1178,7 @@
             } else {
                 // Load into UI
                 ui.accent.value = state.prefs.accentColor;
+                ui.blur.value = state.prefs.blur;
                 ui.script.checked = state.prefs.showScripture;
                 ui.is24.checked = state.prefs.is24h;
                 ui.lds.checked = state.prefs.useLDS;
@@ -1197,8 +1193,7 @@
 
             // Apply Styles
             document.documentElement.style.setProperty('--accent-color', state.prefs.accentColor);
-            // FIXED: Slider Intensity now correctly updates CSS property on root
-            document.documentElement.style.setProperty('--panel-blur', '32px');
+            document.documentElement.style.setProperty('--panel-blur', state.prefs.blur + 'px');
             document.documentElement.style.setProperty('--accent-glow', state.prefs.accentColor + '55');
             
             // Toggle Element Visibility
