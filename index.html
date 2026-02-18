@@ -9,14 +9,13 @@
     PROJECT NEXUS // MODULE V.12.0 (HUMAN INTERFACE RELEASE)
     ================================================================================
     - Core Engine: Vanilla JavaScript
-    - Markdown Engine: Marked.js
+    - Markdown Engine: REPLACED WITH RICH DOCS PROTOCOL V1.0
     - Iconography: Lucide.js
     - Sources: Triple-Protocol Parser (BoM, KJV, DaC_PoGP)
     - Logic Engine: Unique ID Verification System
     ================================================================================
     -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
         /* 
@@ -389,26 +388,97 @@
 
         /* 
         ================================================================================
-        11. SEAMLESS MARKDOWN ENGINE
+        11. REBORN DOCS ENGINE (RICH TEXT)
         ================================================================================
         */
-        .notepad-host { position: relative; height: 400px; }
-        .notepad-editor, .notepad-viewer {
-            position: absolute; inset: 0; padding: 1.5rem;
-            border-radius: 1rem; font-size: 0.95rem; line-height: 1.6;
+        .notepad-host { 
+            position: relative; 
+            height: 420px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1rem;
+        }
+
+        #notes-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.6rem;
+            border-radius: 0.85rem;
+            border: 1px solid var(--card-border);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #notes-toolbar.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            padding: 0.4rem;
+            cursor: pointer;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: 0.2s;
+        }
+
+        .tool-btn:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tool-sep {
+            width: 1px;
+            background: var(--card-border);
+            margin: 0 0.2rem;
+        }
+
+        .docs-color-input {
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+
+        .docs-size-sel {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--card-border);
+            color: white;
+            font-size: 0.7rem;
+            border-radius: 0.4rem;
+            padding: 2px 5px;
+            outline: none;
+        }
+
+        .docs-editor-main {
+            flex: 1;
+            background: transparent;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
             overflow-y: auto;
             color: var(--text-main);
+            outline: none;
+            user-select: text;
+            cursor: text;
+            -webkit-user-modify: read-write;
         }
-        /* Editor inherits precisely the background and font of the viewer */
-        .notepad-editor { 
-            background: transparent; border: 1px dashed var(--accent-color); outline: none;
-            font-family: var(--font-mono); visibility: hidden; z-index: 5;
-            resize: none; width: 100%; height: 100%;
-        }
-        .notepad-viewer { 
-            background: transparent; z-index: 1; cursor: text;
-        }
-        .notepad-viewer h1 { color: var(--accent-color); margin-bottom: 1rem; font-weight: 800; border-bottom: 1px solid var(--card-border); }
+
+        .docs-editor-main h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--accent-color); }
+        .docs-editor-main ul, .docs-editor-main ol { padding-left: 2rem; margin: 1rem 0; }
 
         /* 
         ================================================================================
@@ -634,20 +704,37 @@
                 <div class="portal-grid" id="portal-view"></div>
             </section>
 
-            <!-- NOTE ARCHIVE -->
+            <!-- NOTE ARCHIVE (DOCS MODE) -->
             <section class="nx-card grid-md row-2" id="tour-notes">
                 <div class="nx-card-header">
-                    <span class="nx-card-title"><i data-lucide="file-text"></i> Notepad</span>
+                    <span class="nx-card-title"><i data-lucide="file-text"></i> Archive Ledger</span>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="nx-btn nx-btn-icon" onclick="spawnNotepadCreator()"><i data-lucide="plus-circle"></i></button>
                         <select id="notes-sel" class="nx-btn" onchange="switchArchive()"></select>
                     </div>
                 </div>
+                
                 <div class="notepad-host">
-                    <textarea class="notepad-editor" id="note-edit-raw"></textarea>
-                    <div class="notepad-viewer" id="note-view-html" onclick="activateNoteEditor()"></div>
+                    <!-- TOOLBAR START -->
+                    <div id="notes-toolbar">
+                        <button class="tool-btn" title="Bold" onclick="execCmd('bold')"><i data-lucide="bold" size="16"></i></button>
+                        <button class="tool-btn" title="Italic" onclick="execCmd('italic')"><i data-lucide="italic" size="16"></i></button>
+                        <button class="tool-btn" title="Strike" onclick="execCmd('strikeThrough')"><i data-lucide="strikethrough" size="16"></i></button>
+                        <div class="tool-sep"></div>
+                        <button class="tool-btn" title="Bullets" onclick="execCmd('insertUnorderedList')"><i data-lucide="list" size="16"></i></button>
+                        <button class="tool-btn" title="Numbers" onclick="execCmd('insertOrderedList')"><i data-lucide="list-ordered" size="16"></i></button>
+                        <div class="tool-sep"></div>
+                        <select class="docs-size-sel" onchange="execCmd('fontSize', this.value)">
+                            <option value="1">Small</option>
+                            <option value="3" selected>Normal</option>
+                            <option value="5">Large</option>
+                            <option value="7">Huge</option>
+                        </select>
+                        <input type="color" class="docs-color-input" oninput="execCmd('foreColor', this.value)" value="#ffffff">
+                    </div>
+                    <!-- TOOLBAR END -->
+                    <div class="docs-editor-main" id="docs-main" contenteditable="true" onfocus="showToolbar()" onblur="hideToolbar()" oninput="saveNote()"></div>
                 </div>
-                <div style="margin-top: 1rem; text-align: right; font-size: 0.7rem; opacity: 0.2; font-family: var(--font-mono);">Markdown supported</div>
             </section>
 
         </main>
@@ -786,7 +873,7 @@
             lists: { 'Default': [] },
             activeList: 'Default',
             habits: [],
-            notepads: { 'Ledger 1': '# Notepad\nBegin typing  here. Markdown cheatsheet: https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet' },
+            notepads: { 'Ledger 1': '<h1>Archive Ledger</h1><p>Start documentation session here...</p>' },
             activeNote: 'Ledger 1',
             portals: [],
             time: 1500,
@@ -993,35 +1080,47 @@
 
         const delPortal = (i) => { state.portals.splice(i, 1); renderPortalSection(); };
 
-        // --- GHOST EDITOR CORE ---
+        // --- DOCS EDITOR CORE ---
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('docs-main').focus();
+        }
+
+        function showToolbar() {
+            document.getElementById('notes-toolbar').classList.add('active');
+        }
+
+        function hideToolbar() {
+            // Keep active if color picker or select is being used
+            setTimeout(() => {
+                if (!document.activeElement.closest('.notepad-host')) {
+                    document.getElementById('notes-toolbar').classList.remove('active');
+                }
+            }, 100);
+        }
+
         function renderActiveNoteUI() {
-            const v = document.getElementById('note-view-html');
-            v.innerHTML = marked.parse(state.notepads[state.activeNote]);
-            document.getElementById('note-edit-raw').value = state.notepads[state.activeNote];
+            const editor = document.getElementById('docs-main');
+            editor.innerHTML = state.notepads[state.activeNote] || '<h1>New Ledger</h1><p>Doc initialized...</p>';
             syncState();
         }
 
-        function activateNoteEditor() {
-            document.getElementById('note-view-html').style.visibility = 'hidden';
-            const ed = document.getElementById('note-edit-raw');
-            ed.style.visibility = 'visible'; ed.focus();
+        function saveNote() {
+            state.notepads[state.activeNote] = document.getElementById('docs-main').innerHTML;
+            syncState();
         }
-
-        document.getElementById('note-edit-raw').addEventListener('blur', () => {
-            document.getElementById('note-edit-raw').style.visibility = 'hidden';
-            document.getElementById('note-view-html').style.visibility = 'visible';
-            state.notepads[state.activeNote] = document.getElementById('note-edit-raw').value;
-            renderActiveNoteUI();
-        });
 
         function spawnNotepadCreator() {
             const f = document.getElementById('creator-fields');
-            document.getElementById('creator-title').innerText = "Create New Note";
-            f.innerHTML = `<input type="text" id="in-note-t" class="nx-input" placeholder="Title">`;
+            document.getElementById('creator-title').innerText = "Create New Ledger";
+            f.innerHTML = `<input type="text" id="in-note-t" class="nx-input" placeholder="Volume Title">`;
             document.getElementById('creator-save-btn').onclick = () => {
                 const n = document.getElementById('in-note-t').value; if(!n) return;
-                state.notepads[n] = "# " + n + "\nBegin writing...";
-                state.activeNote = n; closeMod('mod-creator'); renderActiveNoteUI(); refreshSelectors();
+                state.notepads[n] = "<h1>" + n + "</h1><p>Record binary session data here...</p>";
+                state.activeNote = n; 
+                closeMod('mod-creator'); 
+                renderActiveNoteUI(); 
+                refreshSelectors();
             };
             openMod('mod-creator');
         }
@@ -1367,7 +1466,7 @@
                 { id: 'tour-timer', t: 'Time', d: 'Use this Pomodoro clock to keep yourself focused during work.' },
                 { id: 'tour-habits', t: 'Habits', d: 'Track recurring weekly goals and visually monitor your progress.' },
                 { id: 'tour-links', t: 'Shortcuts', d: 'Quick access links to your most visited websites.' },
-                { id: 'tour-notes', t: 'Notepad', d: 'Markdown supported notepad for writing notes.' },
+                { id: 'tour-notes', t: 'Notepad', d: 'Docs-style archive ledger for documentation.' },
                 { id: 'tour-settings', t: 'Full Control', d: 'Customize colors, modules, and themes here. Experiment with the OLED mode!' }
             ];
 
@@ -1418,6 +1517,7 @@
             triggerToast("Tour Complete!");
         };
 
+        lucide.createIcons();
     </script>
 </body>
 </html>
