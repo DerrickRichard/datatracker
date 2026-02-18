@@ -1164,7 +1164,7 @@
             f.innerHTML = `<input type="text" id="in-note-t" class="nx-input" placeholder="Session Title">`;
             document.getElementById('creator-save-btn').onclick = () => {
                 const n = document.getElementById('in-note-t').value; if(!n) return;
-                state.notepads[n] = "<h1>" + n + "</h1><p>Operation log initialized.</p>";
+                state.notepads[n] = "<h1>" + n + "</h1><p>Begin typing here...</p>";
                 state.activeNote = n; 
                 closeMod('mod-creator'); 
                 renderActiveNoteUI(); 
