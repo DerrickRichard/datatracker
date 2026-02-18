@@ -522,9 +522,15 @@
 
             <div class="settings-sec">
                 <span class="settings-label">Data Management</span>
-                <button class="nx-btn" style="width: 100%; justify-content: center;" onclick="exportData()">
-                    <i data-lucide="download"></i> Export Data Backup
-                </button>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <button class="nx-btn" style="width: 100%; justify-content: center;" onclick="exportData()">
+                        <i data-lucide="download"></i> Export Data Backup
+                    </button>
+                    <button class="nx-btn" style="width: 100%; justify-content: center;" onclick="document.getElementById('import-input').click()">
+                        <i data-lucide="upload"></i> Import Data Backup
+                    </button>
+                    <input type="file" id="import-input" style="display: none;" onchange="importData(this)">
+                </div>
             </div>
 
             <button class="nx-btn" style="margin-top: 1rem; width: 100%; justify-content: center; background: var(--accent-color);" onclick="closeMod('mod-theme')">Apply & Exit</button>
@@ -1142,14 +1148,47 @@
 
         // --- DATA MANAGEMENT ---
         function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", `nexus_backup_${new Date().toISOString().split('T')[0]}.json`);
-            document.body.appendChild(dlAnchor);
-            dlAnchor.click();
-            dlAnchor.remove();
-            triggerToast("Database Exported");
+            try {
+                const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const dlAnchor = document.createElement('a');
+                dlAnchor.setAttribute("href", url);
+                dlAnchor.setAttribute("download", `nexus_backup_${new Date().toISOString().split('T')[0]}.json`);
+                document.body.appendChild(dlAnchor);
+                dlAnchor.click();
+                document.body.removeChild(dlAnchor);
+                URL.revokeObjectURL(url);
+                triggerToast("Database Exported");
+            } catch (err) {
+                console.error("Export failed:", err);
+                triggerToast("Export Failed");
+            }
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    if (importedState && typeof importedState === 'object') {
+                        state = importedState;
+                        syncState();
+                        renderAll();
+                        updateInterfaceConfig(true); 
+                        triggerToast("Backup Restored");
+                        input.value = ''; 
+                    } else {
+                        throw new Error("Invalid format");
+                    }
+                } catch (err) {
+                    console.error("Import failed:", err);
+                    triggerToast("Import Failed");
+                }
+            };
+            reader.readAsText(file);
         }
 
         // --- SECURITY & INACTIVITY ---
