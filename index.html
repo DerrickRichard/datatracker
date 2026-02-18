@@ -602,11 +602,11 @@
 
             <div class="settings-sec">
                 <span class="settings-label">Dashboard Modules</span>
-                <div class="toggle-row"><span>Tasks Ledger</span> <input type="checkbox" id="vis-tasks" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row"><span>Tasks Tracker</span> <input type="checkbox" id="vis-tasks" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Focus Timer</span> <input type="checkbox" id="vis-timer" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Habit Tracker</span> <input type="checkbox" id="vis-habits" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Shortcuts</span> <input type="checkbox" id="vis-links" checked onchange="updateInterfaceConfig()"></div>
-                <div class="toggle-row"><span>Note Archive</span> <input type="checkbox" id="vis-notes" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row"><span>Notepad</span> <input type="checkbox" id="vis-notes" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Daily Scripture</span> <input type="checkbox" id="set-script-master" checked onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Weather Node</span> <input type="checkbox" id="vis-weather" checked onchange="updateInterfaceConfig()"></div>
             </div>
@@ -738,7 +738,7 @@
             <!-- NOTE ARCHIVE (DOCS MODE) -->
             <section class="nx-card grid-md row-2" id="tour-notes">
                 <div class="nx-card-header">
-                    <span class="nx-card-title"><i data-lucide="file-text"></i> Archive Ledger</span>
+                    <span class="nx-card-title"><i data-lucide="file-text"></i> Notepad</span>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="nx-btn nx-btn-icon" onclick="spawnNotepadCreator()"><i data-lucide="plus-circle"></i></button>
                         <select id="notes-sel" class="nx-btn" onchange="switchArchive()"></select>
@@ -921,8 +921,8 @@
             lists: { 'Default': [] },
             activeList: 'Default',
             habits: [],
-            notepads: { 'Ledger 1': '<h1>Archive Ledger</h1><p>Start session documentation here...</p>' },
-            activeNote: 'Ledger 1',
+            notepads: { 'Notepad 1': '<h1>Notepadr</h1><p>Begin Typing here...</p>' },
+            activeNote: 'Notepad 1',
             portals: [],
             time: 1500,
             clockOn: false,
@@ -1149,7 +1149,7 @@
 
         function renderActiveNoteUI() {
             const editor = document.getElementById('docs-main');
-            editor.innerHTML = state.notepads[state.activeNote] || '<h1>New Ledger</h1><p>Record session data here...</p>';
+            editor.innerHTML = state.notepads[state.activeNote] || '<h1>New Notepad</h1><p>Begin Typing here...</p>';
             syncState();
         }
 
@@ -1160,7 +1160,7 @@
 
         function spawnNotepadCreator() {
             const f = document.getElementById('creator-fields');
-            document.getElementById('creator-title').innerText = "Create New Ledger";
+            document.getElementById('creator-title').innerText = "Create New Notepad";
             f.innerHTML = `<input type="text" id="in-note-t" class="nx-input" placeholder="Session Title">`;
             document.getElementById('creator-save-btn').onclick = () => {
                 const n = document.getElementById('in-note-t').value; if(!n) return;
@@ -1512,10 +1512,10 @@
                 { id: 'scripture-bar', t: 'Scripture', d: 'A scripture verse is selected here on every refresh.' },
                 { id: 'tour-tasks', t: 'Tasks', d: 'Manage multiple task lists. Completed items move to the bottom automatically.' },
                 { id: 'tour-timer', t: 'Time', d: 'Use this Pomodoro clock to keep yourself focused during work.' },
-                { id: 'tour-habits', t: 'Habits', d: 'Track recurring weekly goals and visually monitor your progress.' },
+                { id: 'tour-habits', t: 'Habits', d: 'Track goals and visually monitor your progress.' },
                 { id: 'tour-links', t: 'Shortcuts', d: 'Quick access links to your most visited websites.' },
-                { id: 'tour-notes', t: 'Notepad', d: 'High-fidelity Archive Ledger for session documentation.' },
-                { id: 'tour-settings', t: 'Full Control', d: 'Customize colors, modules, and themes here. Experiment with the OLED mode!' }
+                { id: 'tour-notes', t: 'Notepad', d: ' Basic Notepaf for writing down information.' },
+                { id: 'tour-settings', t: 'Full Control', d: 'Customize colors, modules, themes, and much more from the settings.' }
             ];
 
             for (let step of steps) {
