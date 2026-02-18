@@ -467,6 +467,16 @@
         </div>
     </div>
 
+    <!-- LOCK DIALOG -->
+    <div class="nx-modal-overlay" id="mod-lock" style="display: none; background: #000; z-index: 100000;">
+        <div class="nx-modal" style="text-align: center;">
+            <h1 style="font-size: 3rem; font-weight: 950; letter-spacing: -2px; margin-bottom: 2rem;">NEXUS<span style="color: var(--accent-color);">.</span></h1>
+            <p style="opacity: 0.4; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px;">System Locked</p>
+            <input type="password" id="lock-pass-input" class="nx-input" placeholder="Enter Password" style="text-align: center; margin-bottom: 1.5rem;">
+            <button class="nx-btn" style="width: 100%; justify-content: center; background: var(--accent-color); padding: 1rem;" onclick="unlockApp()">Unlock Access</button>
+        </div>
+    </div>
+
     <!-- SETTINGS DIALOG -->
     <div class="nx-modal-overlay" id="mod-theme">
         <div class="nx-modal">
@@ -487,10 +497,6 @@
                     <span>Accent Primary</span>
                     <input type="color" id="set-accent-color" oninput="updateInterfaceConfig()" style="border:none; background:none; cursor:pointer">
                 </div>
-                <div class="toggle-row">
-                    <span>Glass Intensity</span>
-                    <input type="range" id="set-blur" class="range-styled" min="0" max="64" oninput="updateInterfaceConfig()">
-                </div>
             </div>
 
             <div class="settings-sec">
@@ -508,6 +514,17 @@
                 <span class="settings-label">System Preferences</span>
                 <div class="toggle-row"><span>Clock: 24-Hour</span> <input type="checkbox" id="set-24h" onchange="updateInterfaceConfig()"></div>
                 <div class="toggle-row"><span>Include LDS Scriptures</span> <input type="checkbox" id="set-lds" checked onchange="updateInterfaceConfig()"></div>
+                <div class="toggle-row">
+                    <span>Admin Password</span>
+                    <input type="password" id="set-password" placeholder="Optional" class="nx-input" style="width: 150px; margin-bottom: 0;" onchange="updateInterfaceConfig()">
+                </div>
+            </div>
+
+            <div class="settings-sec">
+                <span class="settings-label">Data Management</span>
+                <button class="nx-btn" style="width: 100%; justify-content: center;" onclick="exportData()">
+                    <i data-lucide="download"></i> Export Data Backup
+                </button>
             </div>
 
             <button class="nx-btn" style="margin-top: 1rem; width: 100%; justify-content: center; background: var(--accent-color);" onclick="closeMod('mod-theme')">Apply & Exit</button>
@@ -769,6 +786,7 @@
             time: 1500,
             clockOn: false,
             cachedVerse: null,
+            password: '',
             prefs: { useLDS: true, firstRun: true }
         };
 
@@ -792,6 +810,7 @@
             } else {
                 renderAll();
                 refreshScripture();
+                if (state.password) openMod('mod-lock');
             }
         };
 
@@ -955,10 +974,13 @@
             f.innerHTML = `<input type="text" id="in-p-n" class="nx-input" placeholder="Name"><input type="text" id="in-p-u" class="nx-input" placeholder="URL">`;
             document.getElementById('creator-save-btn').onclick = () => {
                 const n = document.getElementById('in-p-n').value;
-                const u = document.getElementById('in-p-u').value;
-                if(n && u) state.portals.push({ name: n, url: u });
-                closeMod('mod-creator');
-                renderPortalSection();
+                let u = document.getElementById('in-p-u').value;
+                if(n && u) {
+                    if (!u.match(/^[a-zA-Z]+:\/\//)) u = 'https://' + u;
+                    state.portals.push({ name: n, url: u });
+                    closeMod('mod-creator');
+                    renderPortalSection();
+                }
             };
             openMod('mod-creator');
         }
@@ -1032,7 +1054,8 @@
         let clockId;
         const refreshClockUI = () => {
             const m = Math.floor(state.time / 60); const s = state.time % 60;
-            document.getElementById('clock').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            const target = document.getElementById('clock');
+            if(target) target.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         };
 
         function toggleClock() {
@@ -1117,6 +1140,44 @@
             triggerToast("Tour Complete!");
         }
 
+        // --- DATA MANAGEMENT ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `nexus_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click();
+            dlAnchor.remove();
+            triggerToast("Database Exported");
+        }
+
+        // --- SECURITY & INACTIVITY ---
+        let inactivityTimer;
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            if (state.password && document.getElementById('mod-lock').style.display !== 'flex') {
+                inactivityTimer = setTimeout(() => {
+                    if (state.password) openMod('mod-lock');
+                }, 120000); // 2 Minutes
+            }
+        }
+
+        function unlockApp() {
+            const input = document.getElementById('lock-pass-input');
+            if (input.value === state.password) {
+                closeMod('mod-lock');
+                input.value = '';
+                resetInactivityTimer();
+            } else {
+                triggerToast("Identity Verification Failed");
+            }
+        }
+
+        ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+            window.addEventListener(evt, resetInactivityTimer);
+        });
+
         // --- BOOTSTRAP ---
         window.onload = bootstrapState;
 
@@ -1124,8 +1185,6 @@
         ================================================================================
         SYSTEM POWER-PATCH V.14.1 (ADDITIVE FIXES ONLY)
         ================================================================================
-        This section fixes the "barely working" tour and the scripture logic bug
-        without deleting any previous code.
         */
 
         // 1. OVERRIDE CORE STATE FOR NEW PREFS
@@ -1139,6 +1198,7 @@
             if (state.prefs.is24h === undefined) state.prefs.is24h = false;
             if (state.prefs.blur === undefined) state.prefs.blur = 32;
             if (!state.prefs.vis) state.prefs.vis = { tasks:true, timer:true, habits:true, links:true, notes:true, weather:true };
+            if (state.password === undefined) state.password = '';
             
             // Apply interface settings manually on boot
             updateInterfaceConfig(true); 
@@ -1150,24 +1210,25 @@
             // START REAL-TIME CLOCK & WEATHER ENGINE
             startNexusEnvironmentalEngine();
             setupLinkProtocol();
+            resetInactivityTimer();
         };
 
         // 2. FIXED INTERFACE CONFIG & PERSISTENCE
         function updateInterfaceConfig(init = false) {
             const ui = {
                 accent: document.getElementById('set-accent-color'),
-                blur: document.getElementById('set-blur'),
                 script: document.getElementById('set-script-master'),
                 is24: document.getElementById('set-24h'),
-                lds: document.getElementById('set-lds')
+                lds: document.getElementById('set-lds'),
+                pass: document.getElementById('set-password')
             };
 
             if(!init) {
                 state.prefs.accentColor = ui.accent.value;
-                state.prefs.blur = ui.blur.value;
                 state.prefs.showScripture = ui.script.checked;
                 state.prefs.is24h = ui.is24.checked;
                 state.prefs.useLDS = ui.lds.checked;
+                state.password = ui.pass.value;
                 
                 state.prefs.vis.tasks = document.getElementById('vis-tasks').checked;
                 state.prefs.vis.timer = document.getElementById('vis-timer').checked;
@@ -1178,10 +1239,10 @@
             } else {
                 // Load into UI
                 ui.accent.value = state.prefs.accentColor;
-                ui.blur.value = state.prefs.blur;
                 ui.script.checked = state.prefs.showScripture;
                 ui.is24.checked = state.prefs.is24h;
                 ui.lds.checked = state.prefs.useLDS;
+                ui.pass.value = state.password || '';
                 
                 document.getElementById('vis-tasks').checked = state.prefs.vis.tasks;
                 document.getElementById('vis-timer').checked = state.prefs.vis.timer;
@@ -1216,7 +1277,8 @@
             const h = Math.floor(totalSec / 3600);
             const m = Math.floor((totalSec % 3600) / 60);
             const s = totalSec % 60;
-            document.getElementById('clock').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            const target = document.getElementById('clock');
+            if(target) target.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         };
 
         // 4. ENVIRONMENTAL NODES (FIXED CLOCK & ACTUAL WEATHER)
